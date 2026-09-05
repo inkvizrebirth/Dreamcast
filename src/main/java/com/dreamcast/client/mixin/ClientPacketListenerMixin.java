@@ -2,6 +2,7 @@ package com.dreamcast.client.mixin;
 
 import com.dreamcast.client.module.impl.BlinkModule;
 import com.dreamcast.client.module.impl.NoRotateModule;
+import com.dreamcast.client.module.impl.VelocityModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;

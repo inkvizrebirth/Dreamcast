@@ -178,6 +178,74 @@ jobs:
               javap -p -cp "$MC" net.minecraft.world.entity.Entity 2>&1 | grep -iE 'getViewYRot|getViewXRot|view'
               echo; echo "=== KeyMapping ==="
               javap -cp "$MC" net.minecraft.client.KeyMapping 2>&1 | grep -iE 'setKey|resetMapping|consumeClick|isDown|setDown'
+
+              # ---- аудит для Dreamcast 2.0: пакеты, чат, еда, действия ----
+              echo; echo "=== Minecraft (screen/gui) ==="
+              javap -p -cp "$MC" net.minecraft.client.Minecraft 2>&1 | grep -iE 'screen|gui|crosshair|hitResult' | head -12
+              echo; echo "=== ChatListener ==="
+              javap -cp "$MC" net.minecraft.client.multiplayer.chat.ChatListener 2>&1 | head -30 || true
+              echo; echo "=== chat классы клиента ==="
+              unzip -l "$MC" | grep -iE 'client/.*[Cc]hat' | head -20
+              echo; echo "=== пакеты: explosion/motion/position ==="
+              unzip -l "$MC" | grep -iE 'protocol/game/Clientbound.*(Explos|Motion|Position|Velocity|Hurt)' | head -20
+              echo; echo "=== ClientboundSetEntityMotionPacket ==="
+              javap -cp "$MC" net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket 2>&1 | head -20 || true
+              echo; echo "=== explosion-пакет (перебор имён) ==="
+              for c in ClientboundExplosionPacket ClientboundExplodePacket ClientboundExplodeEventPacket; do
+                echo "--- $c"
+                javap -cp "$MC" net.minecraft.network.protocol.game.$c 2>&1 | head -18
+              done
+              echo; echo "=== FoodData ==="
+              javap -cp "$MC" net.minecraft.world.food.FoodData 2>&1 | head -25 || true
+              echo; echo "=== FoodProperties ==="
+              javap -cp "$MC" net.minecraft.world.food.FoodProperties 2>&1 | head -25 || true
+              echo; echo "=== Player food/abilities/fishing ==="
+              javap -cp "$MC" net.minecraft.world.entity.player.Player 2>&1 | grep -iE 'food|abilities|fishing|getItemBySlot|getArmorValue' | head -12
+              javap -p -cp "$MC" net.minecraft.world.entity.player.Player 2>&1 | grep -iE 'fishing' | head -6
+              javap -p -cp "$MC" net.minecraft.client.player.LocalPlayer 2>&1 | grep -iE 'fishing' | head -6
+              unzip -l "$MC" | grep -iE 'FishingHook.class' | head -4
+              echo; echo "=== ServerboundPlayerActionPacket ==="
+              javap -cp "$MC" net.minecraft.network.protocol.game.ServerboundPlayerActionPacket 2>&1 | head -15
+              javap -cp "$MC" 'net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action' 2>&1 | head -30
+              echo; echo "=== ServerboundClientCommandPacket ==="
+              javap -cp "$MC" net.minecraft.network.protocol.game.ServerboundClientCommandPacket 2>&1 | head -15
+              javap -cp "$MC" 'net.minecraft.network.protocol.game.ServerboundClientCommandPacket$Action' 2>&1 | head -20
+              echo; echo "=== ServerboundMovePlayerPacket Pos/Rot ==="
+              javap -cp "$MC" 'net.minecraft.network.protocol.game.ServerboundMovePlayerPacket$Pos' 2>&1 | head -15
+              javap -cp "$MC" 'net.minecraft.network.protocol.game.ServerboundMovePlayerPacket$Rot' 2>&1 | head -15
+              echo; echo "=== MouseHandler (middle) ==="
+              javap -cp "$MC" net.minecraft.client.MouseHandler 2>&1 | grep -iE 'middle|Pressed' | head -8
+              echo; echo "=== ClientPacketListener (send/handle) ==="
+              javap -p -cp "$MC" net.minecraft.client.multiplayer.ClientPacketListener 2>&1 | grep -E 'public void (send|handle)' | head -40
+              echo; echo "=== Abilities ==="
+              javap -p -cp "$MC" net.minecraft.world.entity.player.Abilities 2>&1 | head -30 || true
+              echo; echo "=== DeathScreen ==="
+              javap -p -cp "$MC" net.minecraft.client.gui.screens.DeathScreen 2>&1 | head -20 || true
+              echo; echo "=== Options (fov/gamma/keys) ==="
+              javap -cp "$MC" net.minecraft.client.Options 2>&1 | grep -iE 'fov|gamma|keyLeft|keyRight|keyDown|keyUp' | head -12
+              echo; echo "=== SimpleOption get/set ==="
+              javap -cp "$MC" net.minecraft.client.SimpleOption 2>&1 | grep -iE ' get\(| set\(' | head -6 || true
+              echo; echo "=== ItemStack getDestroySpeed ==="
+              javap -cp "$MC" net.minecraft.world.item.ItemStack 2>&1 | grep -iE 'destroy|Damage' | head -8
+              echo; echo "=== BlockStateBase (collision/destroy/fluid) ==="
+              javap -cp "$MC" 'net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase' 2>&1 | grep -iE 'getCollisionShape|isAir|getDestroySpeed|getFluidState|is\(' | head -10
+              echo; echo "=== AbstractContainerMenu (slots) ==="
+              javap -p -cp "$MC" net.minecraft.world.inventory.AbstractContainerMenu 2>&1 | grep -iE 'slots|getSlot|containerId' | head -10
+              echo; echo "=== Entity (move/collision) ==="
+              javap -p -cp "$MC" net.minecraft.world.entity.Entity 2>&1 | grep -iE 'underWater|horizontalCollision|shiftKey|xxa|blockPosition|setPos|DeltaMovement|isShiftKeyDown' | head -15
+              echo; echo "=== LivingEntity (ticks using / food) ==="
+              javap -cp "$MC" net.minecraft.world.entity.LivingEntity 2>&1 | grep -iE 'getTicksUsingItem|jumpFromGround|getItemInHand' | head -6
+              echo; echo "=== Items (лук/удочка/ракета/яблоко) ==="
+              javap -cp "$MC" net.minecraft.world.item.Items 2>&1 | grep -iE ' BOW;|FISHING_ROD;|FIREWORK_ROCKET;|GOLDEN_APPLE;' | head -8
+              echo; echo "=== DataComponents FOOD/USE_EFFECTS ==="
+              javap -cp "$MC" net.minecraft.core.component.DataComponents 2>&1 | grep -iE 'FOOD|USE_EFFECTS' | head -6
+              echo; echo "=== Level getGameTime ==="
+              javap -cp "$MC" net.minecraft.world.level.Level 2>&1 | grep -iE 'getGameTime|getBlockState' | head -4
+              echo; echo "=== Gui setOverlayMessage/chat ==="
+              javap -cp "$MC" net.minecraft.client.gui.Gui 2>&1 | grep -iE 'chat|message|overlay' | head -10
+              echo; echo "=== getAttackStrengthScale/crosshairPickEntity ==="
+              javap -cp "$MC" net.minecraft.world.entity.player.Player 2>&1 | grep -iE 'getAttackStrengthScale' | head -3
+              javap -p -cp "$MC" net.minecraft.client.Minecraft 2>&1 | grep -iE 'crosshairPickEntity' | head -3
             fi
           } > api-audit-result.txt 2>&1
           cat api-audit-result.txt

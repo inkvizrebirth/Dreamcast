@@ -63,7 +63,7 @@ public class AutoArmorModule extends Module {
 	public void tick() {
 		Minecraft client = Minecraft.getInstance();
 		LocalPlayer player = client == null ? null : client.player;
-		if (player == null || client.gameMode == null || client.screen != null) {
+		if (player == null || client.gameMode == null || client.gui.screen() != null) {
 			return;
 		}
 		// Чужой контейнер открыт — наши клики улетели бы не туда

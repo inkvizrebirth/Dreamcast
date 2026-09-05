@@ -46,14 +46,14 @@ public class CriticalsModule extends Module {
 
 	/** Хук из миксина MultiPlayerGameMode#attack — срабатывает на каждый удар игрока. */
 	public static void onAttack(LocalPlayer player) {
-		CriticalsModule module = ModuleManager_find();
+		CriticalsModule module = self();
 		if (module == null || !module.isEnabled() || player == null) {
 			return;
 		}
 		module.doCrit(player);
 	}
 
-	private static CriticalsModule ModuleManager_find() {
+	private static CriticalsModule self() {
 		return com.dreamcast.client.module.ModuleManager.find(CriticalsModule.class);
 	}
 

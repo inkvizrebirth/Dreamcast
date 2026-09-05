@@ -30,7 +30,7 @@ public class AutoJumpModule extends Module {
 	@Override
 	public void tick() {
 		Minecraft client = Minecraft.getInstance();
-		if (client == null || client.player == null || client.screen != null) {
+		if (client == null || client.player == null || client.gui.screen() != null) {
 			release();
 			return;
 		}

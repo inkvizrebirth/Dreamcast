@@ -52,14 +52,11 @@ public class FlightModule extends Module {
 		if (player == null) {
 			return;
 		}
+		// Возвращаем способности как были: игрок не остаётся висеть в воздухе.
+		// Сервер получит новое состояние обычным пакетом способностей в следующем тике.
 		Abilities abilities = player.getAbilities();
 		abilities.mayfly = savedMayFly;
-		abilities.flying = savedFlying;
-		// Клиенту нужно отправить новое состояние способностей серверу
-		Minecraft client = Minecraft.getInstance();
-		if (client != null && client.player != null) {
-			client.player.getAbilities().flying = savedFlying;
-		}
+		abilities.flying = savedFlying && savedMayFly;
 	}
 
 	@Override

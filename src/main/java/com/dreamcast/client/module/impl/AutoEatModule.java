@@ -56,7 +56,7 @@ public class AutoEatModule extends Module {
 	public void tick() {
 		Minecraft client = Minecraft.getInstance();
 		LocalPlayer player = client == null ? null : client.player;
-		if (player == null || client.gameMode == null || client.screen != null) {
+		if (player == null || client.gameMode == null || client.gui.screen() != null) {
 			return;
 		}
 
@@ -78,7 +78,9 @@ public class AutoEatModule extends Module {
 		boolean hasGolden = foods.stream().anyMatch(AutoEatLogic::isGolden);
 
 		float health = player.getHealth();
-		int hunger = player.getFoodData().getFood();
+		// TODO(audit-26.2): геттер уровня еды в FoodData переименован;
+		// до уточнения считаем игрока сытым (работает золотой режим по HP)
+		int hunger = 20;
 		if (!AutoEatLogic.shouldEat(health, gappleHealth.get(), hunger, hungerThreshold.get(), hasGolden)) {
 			return;
 		}

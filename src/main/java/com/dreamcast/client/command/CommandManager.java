@@ -11,7 +11,6 @@ import com.dreamcast.client.command.impl.SearchCommand;
 import com.dreamcast.client.command.impl.ToggleCommand;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -87,14 +86,22 @@ public final class CommandManager {
 		feedback("§cНеизвестная команда «" + parsed.name() + "». " + prefix + "help — список команд.");
 	}
 
-	/** Единый вывод ответа команды: чат с фирменным префиксом. */
+	/**
+	 * Единый вывод ответа команды.
+	 *
+	 * В 26.2 у Player больше нет displayClientMessage — ответы печатаются
+	 * в HUD-уведомления клиента (цветовые коды § вырезаются).
+	 */
 	public static void feedback(String message) {
 		Minecraft client = Minecraft.getInstance();
-		if (client == null || client.player == null) {
+		if (client == null) {
 			return;
 		}
-		String tag = "§8[§b" + DreamcastClient.MOD_NAME + "§8]§r ";
-		client.player.displayClientMessage(Component.literal(tag + message), false);
+		String plain = message.replace("§c", "").replace("§b", "")
+				.replace("§a", "").replace("§f", "").replace("§7", "")
+				.replace("§8", "").replace("§r", "");
+		com.dreamcast.client.util.Notifications.push(
+				DreamcastClient.MOD_NAME, plain, com.dreamcast.client.util.Notifications.Type.INFO);
 	}
 
 	/** Поиск команды по имени или префиксу имени — для подсказок. */

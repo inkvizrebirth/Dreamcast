@@ -42,7 +42,7 @@ public class AutoToolModule extends Module {
 	private void switchToBest(BlockPos pos) {
 		Minecraft client = Minecraft.getInstance();
 		LocalPlayer player = client == null ? null : client.player;
-		if (player == null || client.level == null || client.screen != null) {
+		if (player == null || client.level == null || client.gui.screen() != null) {
 			return;
 		}
 		BlockState state = client.level.getBlockState(pos);

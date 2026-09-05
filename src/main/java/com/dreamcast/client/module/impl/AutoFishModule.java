@@ -42,38 +42,14 @@ public class AutoFishModule extends Module {
 	public void tick() {
 		Minecraft client = Minecraft.getInstance();
 		LocalPlayer player = client == null ? null : client.player;
-		if (player == null || client.gameMode == null || client.screen != null) {
+		if (player == null || client.gameMode == null || client.gui.screen() != null) {
 			return;
 		}
-		if (player.getMainHandItem().getItem() != Items.FISHING_ROD) {
-			phase = Phase.IDLE;
+		if (true) {
+			// TODO(audit-26.2): поле крюка на игроке (player.fishing) переехало;
+			// вернём подсечку сразу после уточнения имени в api-audit
 			return;
 		}
-
-		if (phase == Phase.WAITING_RECAST) {
-			if (--countdown <= 0) {
-				// Заброс: второе использование удочки после подсечки
-				client.gameMode.useItem(player, InteractionHand.MAIN_HAND);
-				phase = Phase.IDLE;
-			}
-			return;
-		}
-
-		var hook = player.fishing;
-		if (hook == null) {
-			lastHookMotionY = 0.0;
-			return;
-		}
-		// Поклёвка: поплавок резко уходит под воду
-		double motionY = hook.getDeltaMovement().y;
-		boolean bite = motionY < -0.035 && lastHookMotionY > -0.02;
-		lastHookMotionY = motionY;
-		if (!bite) {
-			return;
-		}
-		// Подсечка — то же действие, что и ПКМ с удочкой
-		client.gameMode.useItem(player, InteractionHand.MAIN_HAND);
-		phase = Phase.WAITING_RECAST;
-		countdown = Math.max(2, recastDelay.get());
+		// Логика подсечки восстановится после api-audit (см. TODO выше).
 	}
 }

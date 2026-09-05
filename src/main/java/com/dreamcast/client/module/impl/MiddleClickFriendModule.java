@@ -35,7 +35,7 @@ public class MiddleClickFriendModule extends Module {
 		if (client == null || client.player == null || client.mouseHandler == null) {
 			return;
 		}
-		boolean pressed = client.mouseHandler.isMiddlePressed() && client.screen == null;
+		boolean pressed = client.mouseHandler.isMiddlePressed() && client.gui.screen() == null;
 		boolean clicked = pressed && !wasPressed;
 		wasPressed = pressed;
 		if (!clicked) {

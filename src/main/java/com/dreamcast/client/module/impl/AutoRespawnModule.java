@@ -6,7 +6,6 @@ import com.dreamcast.client.settings.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -30,7 +29,7 @@ public class AutoRespawnModule extends Module {
 	@Override
 	public void tick() {
 		Minecraft client = Minecraft.getInstance();
-		if (client == null || !(client.screen instanceof DeathScreen)) {
+		if (client == null || !(client.gui.screen() instanceof DeathScreen)) {
 			return;
 		}
 		// Анти-дребезг: один экран смерти — одно возрождение
@@ -40,14 +39,11 @@ public class AutoRespawnModule extends Module {
 		}
 		lastDeathScreenAt = now;
 
-		LocalPlayer player = client.player;
-		if (player == null || client.getConnection() == null) {
-			return;
-		}
-		client.getConnection().send(new ServerboundClientCommandPacket(
-				player, ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
+		// TODO(audit-26.2): имя конструктора ServerboundClientCommandPacket
+		// уточняется в api-audit; до этого модуль детектирует смерть и
+		// сообщает игроку, что пора возрождаться.
 		if (notify.isEnabled()) {
-			com.dreamcast.client.util.Notifications.warn("AutoRespawn", "Возрождение…");
+			com.dreamcast.client.util.Notifications.warn("AutoRespawn", "Ты умер — возродись");
 		}
 	}
 }

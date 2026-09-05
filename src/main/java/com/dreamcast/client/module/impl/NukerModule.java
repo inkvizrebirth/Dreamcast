@@ -57,7 +57,7 @@ public class NukerModule extends Module {
 	public void tick() {
 		Minecraft client = Minecraft.getInstance();
 		LocalPlayer player = client == null ? null : client.player;
-		if (player == null || client.level == null || client.gameMode == null || client.screen != null) {
+		if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
 			current = null;
 			return;
 		}

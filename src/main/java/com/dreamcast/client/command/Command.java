@@ -1,7 +1,6 @@
 package com.dreamcast.client.command;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
@@ -59,12 +58,5 @@ public abstract class Command {
 
 	protected static Minecraft client() {
 		return Minecraft.getInstance();
-	}
-
-	protected static void chat(String text) {
-		Minecraft client = Minecraft.getInstance();
-		if (client != null && client.player != null) {
-			client.player.displayClientMessage(Component.literal(text), false);
-		}
 	}
 }

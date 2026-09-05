@@ -11,6 +11,7 @@ import com.dreamcast.client.command.impl.SearchCommand;
 import com.dreamcast.client.command.impl.ToggleCommand;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -87,21 +88,18 @@ public final class CommandManager {
 	}
 
 	/**
-	 * Единый вывод ответа команды.
+	 * Единый вывод ответа команды — в чат системным сообщением.
 	 *
-	 * В 26.2 у Player больше нет displayClientMessage — ответы печатаются
-	 * в HUD-уведомления клиента (цветовые коды § вырезаются).
+	 * В 26.2 у Player нет displayClientMessage; вместо него
+	 * ChatListener.handleSystemMessage(Component, boolean).
 	 */
 	public static void feedback(String message) {
 		Minecraft client = Minecraft.getInstance();
-		if (client == null) {
+		if (client == null || client.gui == null) {
 			return;
 		}
-		String plain = message.replace("§c", "").replace("§b", "")
-				.replace("§a", "").replace("§f", "").replace("§7", "")
-				.replace("§8", "").replace("§r", "");
-		com.dreamcast.client.util.Notifications.push(
-				DreamcastClient.MOD_NAME, plain, com.dreamcast.client.util.Notifications.Type.INFO);
+		String tag = "§8[§b" + DreamcastClient.MOD_NAME + "§8]§r ";
+		client.gui.chatListener().handleSystemMessage(Component.literal(tag + message), false);
 	}
 
 	/** Поиск команды по имени или префиксу имени — для подсказок. */

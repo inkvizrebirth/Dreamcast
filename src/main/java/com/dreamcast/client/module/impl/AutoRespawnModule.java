@@ -6,6 +6,7 @@ import com.dreamcast.client.settings.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -39,11 +40,11 @@ public class AutoRespawnModule extends Module {
 		}
 		lastDeathScreenAt = now;
 
-		// TODO(audit-26.2): имя конструктора ServerboundClientCommandPacket
-		// уточняется в api-audit; до этого модуль детектирует смерть и
-		// сообщает игроку, что пора возрождаться.
+		// В 26.2 пакет принимает только действие (id игрока сервер знает сам)
+		client.player.connection.send(new ServerboundClientCommandPacket(
+				ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
 		if (notify.isEnabled()) {
-			com.dreamcast.client.util.Notifications.warn("AutoRespawn", "Ты умер — возродись");
+			com.dreamcast.client.util.Notifications.warn("AutoRespawn", "Возрождение…");
 		}
 	}
 }

@@ -78,9 +78,7 @@ public class AutoEatModule extends Module {
 		boolean hasGolden = foods.stream().anyMatch(AutoEatLogic::isGolden);
 
 		float health = player.getHealth();
-		// TODO(audit-26.2): геттер уровня еды в FoodData переименован;
-		// до уточнения считаем игрока сытым (работает золотой режим по HP)
-		int hunger = 20;
+		int hunger = player.getFoodData().getFoodLevel();
 		if (!AutoEatLogic.shouldEat(health, gappleHealth.get(), hunger, hungerThreshold.get(), hasGolden)) {
 			return;
 		}

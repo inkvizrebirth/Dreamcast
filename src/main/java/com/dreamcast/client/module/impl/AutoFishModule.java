@@ -45,11 +45,40 @@ public class AutoFishModule extends Module {
 		if (player == null || client.gameMode == null || client.gui.screen() != null) {
 			return;
 		}
-		if (true) {
-			// TODO(audit-26.2): поле крюка на игроке (player.fishing) переехало;
-			// вернём подсечку сразу после уточнения имени в api-audit
+		// Без удочки в руке ловить нечего
+		if (player.getMainHandItem().getItem() != Items.FISHING_ROD) {
+			phase = Phase.IDLE;
 			return;
 		}
-		// Логика подсечки восстановится после api-audit (см. TODO выше).
+
+		// Фаза паузы: ждём и забрасываем заново
+		if (phase == Phase.WAITING_RECAST) {
+			if (--countdown <= 0) {
+				client.gameMode.useItem(player, InteractionHand.MAIN_HAND);
+				player.swing(InteractionHand.MAIN_HAND);
+				lastHookMotionY = 0.0;
+				phase = Phase.IDLE;
+			}
+			return;
+		}
+
+		// Публичное поле крюка на игроке (Player.fishing в 26.2)
+		var hook = player.fishing;
+		if (hook == null || hook.isRemoved()) {
+			phase = Phase.IDLE;
+			return;
+		}
+
+		// Поклёвка — поплавок резко дёргается вниз
+		double motionY = hook.getDeltaMovement().y;
+		if (motionY < -0.02 && lastHookMotionY >= -0.02) {
+			// Подсечка: тот же ПКМ, что вытаскивает рыбу
+			client.gameMode.useItem(player, InteractionHand.MAIN_HAND);
+			player.swing(InteractionHand.MAIN_HAND);
+			phase = Phase.WAITING_RECAST;
+			countdown = recastDelay.get();
+			com.dreamcast.client.util.Notifications.ok("AutoFish", "Поймал — закидываю снова");
+		}
+		lastHookMotionY = motionY;
 	}
 }

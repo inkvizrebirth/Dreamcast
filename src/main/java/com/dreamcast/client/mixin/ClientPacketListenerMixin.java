@@ -66,4 +66,23 @@ public abstract class ClientPacketListenerMixin {
 			NoRotateModule.restoreRotation(player);
 		}
 	}
+
+	/**
+	 * Velocity: motion-пакет применён — корректируем вектор, если он наш.
+	 * Пакет в 26.2 — рекорд: {@code id()} (сущность) и {@code movement()}.
+	 */
+	@Inject(method = "handleSetEntityMotion", at = @At("TAIL"), require = 0)
+	private void dreamcast$velocityMotion(
+			net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket packet,
+			CallbackInfo ci) {
+		VelocityModule.onMotionApplied(packet.id());
+	}
+
+	/** Velocity: взрыв обработан; нокаут относится к игроку, если knockback есть. */
+	@Inject(method = "handleExplosion", at = @At("TAIL"), require = 0)
+	private void dreamcast$velocityExplosion(
+			net.minecraft.network.protocol.game.ClientboundExplodePacket packet,
+			CallbackInfo ci) {
+		VelocityModule.onExplosionApplied(packet.playerKnockback().isPresent());
+	}
 }

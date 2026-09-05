@@ -23,17 +23,17 @@
 MC_JAR=/home/runner/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft/minecraft-merged-deobf/26.2/minecraft-merged-deobf-26.2.jar
 
 === классы мобов/врагов/манекенов ===
-        0  2026-09-05 18:59   assets/minecraft/textures/entity/armorstand/
+        0  2026-09-05 19:24   assets/minecraft/textures/entity/armorstand/
       809  1980-02-01 00:00   assets/minecraft/textures/entity/armorstand/armorstand.png
-        0  2026-09-05 18:59   net/minecraft/client/model/object/armorstand/
+        0  2026-09-05 19:24   net/minecraft/client/model/object/armorstand/
      6334  1980-02-01 00:00   net/minecraft/client/model/object/armorstand/ArmorStandArmorModel.class
-      320  1980-02-01 00:00   net/minecraft/client/model/object/armorstand/package-info.class
      5851  1980-02-01 00:00   net/minecraft/client/model/object/armorstand/ArmorStandModel.class
+      320  1980-02-01 00:00   net/minecraft/client/model/object/armorstand/package-info.class
     11516  1980-02-01 00:00   net/minecraft/client/renderer/entity/ArmorStandRenderer.class
      1224  1980-02-01 00:00   net/minecraft/client/renderer/entity/state/ArmorStandRenderState.class
      2859  1980-02-01 00:00   net/minecraft/util/datafix/fixes/EntityArmorStandSilentFix.class
-    71991  1980-02-01 00:00   net/minecraft/world/entity/Mob.class
      3925  1980-02-01 00:00   net/minecraft/world/entity/MobCategory.class
+    71991  1980-02-01 00:00   net/minecraft/world/entity/Mob.class
    157622  1980-02-01 00:00   net/minecraft/world/entity/LivingEntity.class
      5673  1980-02-01 00:00   net/minecraft/world/entity/decoration/ArmorStand$ArmorStandPose.class
     31215  1980-02-01 00:00   net/minecraft/world/entity/decoration/ArmorStand.class
@@ -474,28 +474,28 @@ public class net.minecraft.world.item.BucketItem extends net.minecraft.world.ite
   public void handleSlotStateChanged(int, int, boolean);
 
 === классы оверлеев ===
-     3595  1980-02-01 00:00   net/minecraft/client/gui/components/BossHealthOverlay$1.class
      7316  1980-02-01 00:00   net/minecraft/client/gui/components/BossHealthOverlay.class
+     3595  1980-02-01 00:00   net/minecraft/client/gui/components/BossHealthOverlay$1.class
      3361  1980-02-01 00:00   net/minecraft/client/gui/components/DebugScreenOverlay$1.class
-    21742  1980-02-01 00:00   net/minecraft/client/gui/components/DebugScreenOverlay.class
      4652  1980-02-01 00:00   net/minecraft/client/gui/components/IMEPreeditOverlay.class
+    21742  1980-02-01 00:00   net/minecraft/client/gui/components/DebugScreenOverlay.class
+     1473  1980-02-01 00:00   net/minecraft/client/gui/components/PlayerTabOverlay$HealthState.class
      2498  1980-02-01 00:00   net/minecraft/client/gui/components/PlayerTabOverlay$ScoreDisplayEntry.class
     21670  1980-02-01 00:00   net/minecraft/client/gui/components/PlayerTabOverlay.class
-     1473  1980-02-01 00:00   net/minecraft/client/gui/components/PlayerTabOverlay$HealthState.class
      2015  1980-02-01 00:00   net/minecraft/client/gui/components/SubtitleOverlay$SoundPlayedAt.class
      5001  1980-02-01 00:00   net/minecraft/client/gui/components/SubtitleOverlay$Subtitle.class
      7576  1980-02-01 00:00   net/minecraft/client/gui/components/SubtitleOverlay.class
      2687  1980-02-01 00:00   net/minecraft/client/gui/screens/LoadingOverlay$LogoTexture.class
      8761  1980-02-01 00:00   net/minecraft/client/gui/screens/LoadingOverlay.class
       632  1980-02-01 00:00   net/minecraft/client/gui/screens/Overlay.class
-     1522  1980-02-01 00:00   net/minecraft/client/gui/screens/friends/FriendsOverlayScreen$1.class
      4421  1980-02-01 00:00   net/minecraft/client/gui/screens/friends/FriendsOverlayTabButton.class
     22448  1980-02-01 00:00   net/minecraft/client/gui/screens/friends/FriendsOverlayScreen.class
+     1522  1980-02-01 00:00   net/minecraft/client/gui/screens/friends/FriendsOverlayScreen$1.class
+     6490  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent$OverlayCraftingRecipeButton.class
      3112  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent$OverlayRecipeButton$Pos.class
      4694  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent$OverlayRecipeButton.class
      3959  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent$OverlaySmeltingRecipeButton.class
      7848  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent.class
-     6490  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent$OverlayCraftingRecipeButton.class
      2000  1980-02-01 00:00   net/minecraft/client/particle/FireworkParticles$OverlayParticle.class
      2221  1980-02-01 00:00   net/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay.class
      2219  1980-02-01 00:00   net/minecraft/client/renderer/texture/OverlayTexture.class
@@ -505,15 +505,15 @@ public class net.minecraft.world.item.BucketItem extends net.minecraft.world.ite
       622  1980-02-01 00:00   assets/minecraft/blockstates/pumpkin_stem.json
        97  1980-02-01 00:00   assets/minecraft/items/carved_pumpkin.json
        90  1980-02-01 00:00   assets/minecraft/items/pumpkin.json
-       93  1980-02-01 00:00   assets/minecraft/items/pumpkin_pie.json
        95  1980-02-01 00:00   assets/minecraft/items/pumpkin_seeds.json
+       93  1980-02-01 00:00   assets/minecraft/items/pumpkin_pie.json
       166  1980-02-01 00:00   assets/minecraft/models/block/attached_pumpkin_stem.json
       197  1980-02-01 00:00   assets/minecraft/models/block/carved_pumpkin.json
       326  1980-02-01 00:00   assets/minecraft/models/block/pumpkin.json
       110  1980-02-01 00:00   assets/minecraft/models/block/pumpkin_stem_stage0.json
       110  1980-02-01 00:00   assets/minecraft/models/block/pumpkin_stem_stage1.json
       110  1980-02-01 00:00   assets/minecraft/models/block/pumpkin_stem_stage2.json
-      110  1980-02-01 00:00   assets/minecraft/models/block/pumpkin_stem_stage4.json
+      110  1980-02-01 00:00   assets/minecraft/models/block/pumpkin_stem_stage3.json
 grep: write error: Broken pipe
 
 === FogRenderer ===
@@ -588,11 +588,11 @@ public final class net.minecraft.world.inventory.ContainerInput extends java.lan
   public static final net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> DARKNESS;
 
 === fog environments ===
-        0  2026-09-05 18:59   net/minecraft/client/renderer/fog/environment/
+        0  2026-09-05 19:24   net/minecraft/client/renderer/fog/environment/
      7163  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/AtmosphericFogEnvironment.class
      2722  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/BlindnessFogEnvironment.class
-     1723  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/FogEnvironment.class
      2698  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/DarknessFogEnvironment.class
+     1723  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/FogEnvironment.class
      1494  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/MobEffectFogEnvironment.class
      2599  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/LavaFogEnvironment.class
      2290  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/PowderedSnowFogEnvironment.class
@@ -600,9 +600,9 @@ public final class net.minecraft.world.inventory.ContainerInput extends java.lan
       321  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/package-info.class
 
 === gui layers/overlays ===
+     2196  1980-02-01 00:00   net/minecraft/client/gui/Hud$1DisplayEntry.class
      1551  1980-02-01 00:00   net/minecraft/client/gui/Hud$ContextualInfo.class
      5824  1980-02-01 00:00   net/minecraft/client/gui/Hud$HeartType.class
-     2196  1980-02-01 00:00   net/minecraft/client/gui/Hud$1DisplayEntry.class
     60255  1980-02-01 00:00   net/minecraft/client/gui/Hud.class
      5054  1980-02-01 00:00   assets/minecraft/textures/misc/credits_vignette.png
        41  1980-02-01 00:00   assets/minecraft/textures/misc/credits_vignette.png.mcmeta
@@ -762,12 +762,12 @@ public class net.minecraft.client.multiplayer.chat.ChatListener {
      2167  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$ChatMethod.class
      3505  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$ClickableTextOnlyGraphicsAccess.class
      2113  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$DelayedMessageDeletion.class
-     1816  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$DisplayMode.class
      2165  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$Draft.class
      4215  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$DrawingBackgroundGraphicsAccess.class
-     6928  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$DrawingFocusedGraphicsAccess.class
       713  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$LineConsumer.class
      1485  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$State.class
+     6928  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$DrawingFocusedGraphicsAccess.class
+     1816  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$DisplayMode.class
     27751  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent.class
      1793  1980-02-01 00:00   net/minecraft/client/gui/screens/ChatScreen$1.class
       696  1980-02-01 00:00   net/minecraft/client/gui/screens/ChatScreen$ChatConstructor.class

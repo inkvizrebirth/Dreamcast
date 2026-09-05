@@ -8,32 +8,32 @@
 
 === все jar в fabric-loom ===
 /home/runner/.gradle/caches/fabric-loom/26.2/minecraft-extracted_server.jar
+/home/runner/.gradle/caches/fabric-loom/26.2/minecraft-client.jar
 /home/runner/.gradle/caches/fabric-loom/26.2/minecraft-server.jar
 /home/runner/.gradle/caches/fabric-loom/26.2/minecraft-merged.jar
-/home/runner/.gradle/caches/fabric-loom/26.2/minecraft-client.jar
 /home/runner/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft/minecraft-merged-deobf/26.2/minecraft-merged-deobf-26.2.jar
 
 === minecraft-*.jar по всему ~/.gradle ===
 /home/runner/.gradle/caches/fabric-loom/26.2/minecraft-extracted_server.jar
+/home/runner/.gradle/caches/fabric-loom/26.2/minecraft-client.jar
 /home/runner/.gradle/caches/fabric-loom/26.2/minecraft-server.jar
 /home/runner/.gradle/caches/fabric-loom/26.2/minecraft-merged.jar
-/home/runner/.gradle/caches/fabric-loom/26.2/minecraft-client.jar
 /home/runner/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft/minecraft-merged-deobf/26.2/minecraft-merged-deobf-26.2.jar
 
 MC_JAR=/home/runner/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft/minecraft-merged-deobf/26.2/minecraft-merged-deobf-26.2.jar
 
 === классы мобов/врагов/манекенов ===
-        0  2026-09-04 12:57   assets/minecraft/textures/entity/armorstand/
+        0  2026-09-05 18:59   assets/minecraft/textures/entity/armorstand/
       809  1980-02-01 00:00   assets/minecraft/textures/entity/armorstand/armorstand.png
-        0  2026-09-04 12:57   net/minecraft/client/model/object/armorstand/
+        0  2026-09-05 18:59   net/minecraft/client/model/object/armorstand/
      6334  1980-02-01 00:00   net/minecraft/client/model/object/armorstand/ArmorStandArmorModel.class
-     5851  1980-02-01 00:00   net/minecraft/client/model/object/armorstand/ArmorStandModel.class
       320  1980-02-01 00:00   net/minecraft/client/model/object/armorstand/package-info.class
+     5851  1980-02-01 00:00   net/minecraft/client/model/object/armorstand/ArmorStandModel.class
     11516  1980-02-01 00:00   net/minecraft/client/renderer/entity/ArmorStandRenderer.class
      1224  1980-02-01 00:00   net/minecraft/client/renderer/entity/state/ArmorStandRenderState.class
      2859  1980-02-01 00:00   net/minecraft/util/datafix/fixes/EntityArmorStandSilentFix.class
-     3925  1980-02-01 00:00   net/minecraft/world/entity/MobCategory.class
     71991  1980-02-01 00:00   net/minecraft/world/entity/Mob.class
+     3925  1980-02-01 00:00   net/minecraft/world/entity/MobCategory.class
    157622  1980-02-01 00:00   net/minecraft/world/entity/LivingEntity.class
      5673  1980-02-01 00:00   net/minecraft/world/entity/decoration/ArmorStand$ArmorStandPose.class
     31215  1980-02-01 00:00   net/minecraft/world/entity/decoration/ArmorStand.class
@@ -477,25 +477,25 @@ public class net.minecraft.world.item.BucketItem extends net.minecraft.world.ite
      3595  1980-02-01 00:00   net/minecraft/client/gui/components/BossHealthOverlay$1.class
      7316  1980-02-01 00:00   net/minecraft/client/gui/components/BossHealthOverlay.class
      3361  1980-02-01 00:00   net/minecraft/client/gui/components/DebugScreenOverlay$1.class
-     4652  1980-02-01 00:00   net/minecraft/client/gui/components/IMEPreeditOverlay.class
     21742  1980-02-01 00:00   net/minecraft/client/gui/components/DebugScreenOverlay.class
-     1473  1980-02-01 00:00   net/minecraft/client/gui/components/PlayerTabOverlay$HealthState.class
+     4652  1980-02-01 00:00   net/minecraft/client/gui/components/IMEPreeditOverlay.class
      2498  1980-02-01 00:00   net/minecraft/client/gui/components/PlayerTabOverlay$ScoreDisplayEntry.class
     21670  1980-02-01 00:00   net/minecraft/client/gui/components/PlayerTabOverlay.class
+     1473  1980-02-01 00:00   net/minecraft/client/gui/components/PlayerTabOverlay$HealthState.class
      2015  1980-02-01 00:00   net/minecraft/client/gui/components/SubtitleOverlay$SoundPlayedAt.class
      5001  1980-02-01 00:00   net/minecraft/client/gui/components/SubtitleOverlay$Subtitle.class
      7576  1980-02-01 00:00   net/minecraft/client/gui/components/SubtitleOverlay.class
+     2687  1980-02-01 00:00   net/minecraft/client/gui/screens/LoadingOverlay$LogoTexture.class
      8761  1980-02-01 00:00   net/minecraft/client/gui/screens/LoadingOverlay.class
       632  1980-02-01 00:00   net/minecraft/client/gui/screens/Overlay.class
-     2687  1980-02-01 00:00   net/minecraft/client/gui/screens/LoadingOverlay$LogoTexture.class
      1522  1980-02-01 00:00   net/minecraft/client/gui/screens/friends/FriendsOverlayScreen$1.class
      4421  1980-02-01 00:00   net/minecraft/client/gui/screens/friends/FriendsOverlayTabButton.class
     22448  1980-02-01 00:00   net/minecraft/client/gui/screens/friends/FriendsOverlayScreen.class
-     6490  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent$OverlayCraftingRecipeButton.class
-     3959  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent$OverlaySmeltingRecipeButton.class
-     4694  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent$OverlayRecipeButton.class
-     7848  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent.class
      3112  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent$OverlayRecipeButton$Pos.class
+     4694  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent$OverlayRecipeButton.class
+     3959  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent$OverlaySmeltingRecipeButton.class
+     7848  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent.class
+     6490  1980-02-01 00:00   net/minecraft/client/gui/screens/recipebook/OverlayRecipeComponent$OverlayCraftingRecipeButton.class
      2000  1980-02-01 00:00   net/minecraft/client/particle/FireworkParticles$OverlayParticle.class
      2221  1980-02-01 00:00   net/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay.class
      2219  1980-02-01 00:00   net/minecraft/client/renderer/texture/OverlayTexture.class
@@ -513,7 +513,7 @@ public class net.minecraft.world.item.BucketItem extends net.minecraft.world.ite
       110  1980-02-01 00:00   assets/minecraft/models/block/pumpkin_stem_stage0.json
       110  1980-02-01 00:00   assets/minecraft/models/block/pumpkin_stem_stage1.json
       110  1980-02-01 00:00   assets/minecraft/models/block/pumpkin_stem_stage2.json
-      110  1980-02-01 00:00   assets/minecraft/models/block/pumpkin_stem_stage3.json
+      110  1980-02-01 00:00   assets/minecraft/models/block/pumpkin_stem_stage4.json
 grep: write error: Broken pipe
 
 === FogRenderer ===
@@ -588,7 +588,7 @@ public final class net.minecraft.world.inventory.ContainerInput extends java.lan
   public static final net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> DARKNESS;
 
 === fog environments ===
-        0  2026-09-04 12:57   net/minecraft/client/renderer/fog/environment/
+        0  2026-09-05 18:59   net/minecraft/client/renderer/fog/environment/
      7163  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/AtmosphericFogEnvironment.class
      2722  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/BlindnessFogEnvironment.class
      1723  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/FogEnvironment.class
@@ -596,13 +596,13 @@ public final class net.minecraft.world.inventory.ContainerInput extends java.lan
      1494  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/MobEffectFogEnvironment.class
      2599  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/LavaFogEnvironment.class
      2290  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/PowderedSnowFogEnvironment.class
-      321  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/package-info.class
      3052  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/WaterFogEnvironment.class
+      321  1980-02-01 00:00   net/minecraft/client/renderer/fog/environment/package-info.class
 
 === gui layers/overlays ===
-     2196  1980-02-01 00:00   net/minecraft/client/gui/Hud$1DisplayEntry.class
      1551  1980-02-01 00:00   net/minecraft/client/gui/Hud$ContextualInfo.class
      5824  1980-02-01 00:00   net/minecraft/client/gui/Hud$HeartType.class
+     2196  1980-02-01 00:00   net/minecraft/client/gui/Hud$1DisplayEntry.class
     60255  1980-02-01 00:00   net/minecraft/client/gui/Hud.class
      5054  1980-02-01 00:00   assets/minecraft/textures/misc/credits_vignette.png
        41  1980-02-01 00:00   assets/minecraft/textures/misc/credits_vignette.png.mcmeta
@@ -720,3 +720,408 @@ public final class net.minecraft.world.entity.MobCategory extends java.lang.Enum
   public boolean consumeClick();
   public void setKey(com.mojang.blaze3d.platform.InputConstants$Key);
   public void setDown(boolean);
+
+=== Minecraft (screen/gui) ===
+  public final net.minecraft.client.gui.Font font;
+  public final net.minecraft.client.gui.Font fontFilterFishy;
+  public final net.minecraft.client.gui.Gui gui;
+  public final net.minecraft.client.gui.components.debug.DebugScreenEntryList debugEntries;
+  private final net.minecraft.client.gui.font.FontManager fontManager;
+  private final net.minecraft.client.gui.screens.social.PlayerSocialManager playerSocialManager;
+  private final net.minecraft.client.gui.screens.social.RemoteFriendListUpdateHandler remoteFriendListUpdateHandler;
+  private final com.mojang.realmsclient.gui.RealmsDataFetcher realmsDataFetcher;
+  public net.minecraft.world.entity.Entity crosshairPickEntity;
+  public net.minecraft.world.phys.HitResult hitResult;
+  private void onFullscreenError(int, long);
+  public void resizeGui();
+
+=== ChatListener ===
+Compiled from "ChatListener.java"
+public class net.minecraft.client.multiplayer.chat.ChatListener {
+  public net.minecraft.client.multiplayer.chat.ChatListener(net.minecraft.client.Minecraft);
+  public void tick();
+  public void setMessageDelay(double);
+  public void acceptNextDelayedMessage();
+  public long queueSize();
+  public void flushQueue();
+  public boolean removeFromDelayedMessageQueue(net.minecraft.network.chat.MessageSignature);
+  public void handlePlayerChatMessage(net.minecraft.network.chat.PlayerChatMessage, com.mojang.authlib.GameProfile, net.minecraft.network.chat.ChatType$Bound);
+  public void handleChatMessageError(java.util.UUID, net.minecraft.network.chat.MessageSignature, net.minecraft.network.chat.ChatType$Bound);
+  public void handleDisguisedChatMessage(net.minecraft.network.chat.Component, net.minecraft.network.chat.ChatType$Bound);
+  public void handleSystemMessage(net.minecraft.network.chat.Component, boolean);
+  public void handleOverlay(net.minecraft.network.chat.Component);
+  static {};
+}
+
+=== chat классы клиента ===
+     3677  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$1.class
+     2099  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$AlphaCalculator.class
+     1256  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$ChatGraphicsAccess.class
+     1140  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$ChatMethod$1.class
+     1267  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$ChatMethod$2.class
+     2167  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$ChatMethod.class
+     3505  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$ClickableTextOnlyGraphicsAccess.class
+     2113  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$DelayedMessageDeletion.class
+     1816  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$DisplayMode.class
+     2165  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$Draft.class
+     4215  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$DrawingBackgroundGraphicsAccess.class
+     6928  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$DrawingFocusedGraphicsAccess.class
+      713  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$LineConsumer.class
+     1485  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent$State.class
+    27751  1980-02-01 00:00   net/minecraft/client/gui/components/ChatComponent.class
+     1793  1980-02-01 00:00   net/minecraft/client/gui/screens/ChatScreen$1.class
+      696  1980-02-01 00:00   net/minecraft/client/gui/screens/ChatScreen$ChatConstructor.class
+     1576  1980-02-01 00:00   net/minecraft/client/gui/screens/ChatScreen$ExitReason.class
+    16413  1980-02-01 00:00   net/minecraft/client/gui/screens/ChatScreen.class
+     4273  1980-02-01 00:00   net/minecraft/client/gui/screens/InBedChatScreen.class
+grep: write error: Broken pipe
+
+=== пакеты: explosion/motion/position ===
+     5649  1980-02-01 00:00   net/minecraft/network/protocol/game/ClientboundEntityPositionSyncPacket.class
+     4883  1980-02-01 00:00   net/minecraft/network/protocol/game/ClientboundHurtAnimationPacket.class
+     5884  1980-02-01 00:00   net/minecraft/network/protocol/game/ClientboundPlayerPositionPacket.class
+     4325  1980-02-01 00:00   net/minecraft/network/protocol/game/ClientboundSetDefaultSpawnPositionPacket.class
+     4811  1980-02-01 00:00   net/minecraft/network/protocol/game/ClientboundSetEntityMotionPacket.class
+
+=== ClientboundSetEntityMotionPacket ===
+Compiled from "ClientboundSetEntityMotionPacket.java"
+public final class net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket extends java.lang.Record implements net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> {
+  public static final net.minecraft.network.codec.StreamCodec<io.netty.buffer.ByteBuf, net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket> STREAM_CODEC;
+  public net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket(net.minecraft.world.entity.Entity);
+  public net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket(int, net.minecraft.world.phys.Vec3);
+  public net.minecraft.network.protocol.PacketType<net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket> type();
+  public void handle(net.minecraft.network.protocol.game.ClientGamePacketListener);
+  public final java.lang.String toString();
+  public final int hashCode();
+  public final boolean equals(java.lang.Object);
+  public int id();
+  public net.minecraft.world.phys.Vec3 movement();
+  public void handle(net.minecraft.network.PacketListener);
+  static {};
+}
+
+=== explosion-пакет (перебор имён) ===
+--- ClientboundExplosionPacket
+Error: class not found: net.minecraft.network.protocol.game.ClientboundExplosionPacket
+--- ClientboundExplodePacket
+Compiled from "ClientboundExplodePacket.java"
+public final class net.minecraft.network.protocol.game.ClientboundExplodePacket extends java.lang.Record implements net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> {
+  public static final net.minecraft.network.codec.StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, net.minecraft.network.protocol.game.ClientboundExplodePacket> STREAM_CODEC;
+  public net.minecraft.network.protocol.game.ClientboundExplodePacket(net.minecraft.world.phys.Vec3, float, int, java.util.Optional<net.minecraft.world.phys.Vec3>, net.minecraft.core.particles.ParticleOptions, net.minecraft.core.Holder<net.minecraft.sounds.SoundEvent>, net.minecraft.util.random.WeightedList<net.minecraft.core.particles.ExplosionParticleInfo>);
+  public net.minecraft.network.protocol.PacketType<net.minecraft.network.protocol.game.ClientboundExplodePacket> type();
+  public void handle(net.minecraft.network.protocol.game.ClientGamePacketListener);
+  public final java.lang.String toString();
+  public final int hashCode();
+  public final boolean equals(java.lang.Object);
+  public net.minecraft.world.phys.Vec3 center();
+  public float radius();
+  public int blockCount();
+  public java.util.Optional<net.minecraft.world.phys.Vec3> playerKnockback();
+  public net.minecraft.core.particles.ParticleOptions explosionParticle();
+  public net.minecraft.core.Holder<net.minecraft.sounds.SoundEvent> explosionSound();
+  public net.minecraft.util.random.WeightedList<net.minecraft.core.particles.ExplosionParticleInfo> blockParticles();
+  public void handle(net.minecraft.network.PacketListener);
+  static {};
+--- ClientboundExplodeEventPacket
+Error: class not found: net.minecraft.network.protocol.game.ClientboundExplodeEventPacket
+
+=== FoodData ===
+Compiled from "FoodData.java"
+public class net.minecraft.world.food.FoodData {
+  public net.minecraft.world.food.FoodData();
+  public void eat(int, float);
+  public void eat(net.minecraft.world.food.FoodProperties);
+  public void tick(net.minecraft.server.level.ServerPlayer);
+  public void readAdditionalSaveData(net.minecraft.world.level.storage.ValueInput);
+  public void addAdditionalSaveData(net.minecraft.world.level.storage.ValueOutput);
+  public int getFoodLevel();
+  public boolean hasEnoughFood();
+  public boolean needsFood();
+  public void addExhaustion(float);
+  public float getSaturationLevel();
+  public void setFoodLevel(int);
+  public void setSaturation(float);
+}
+
+=== FoodProperties ===
+Compiled from "FoodProperties.java"
+public final class net.minecraft.world.food.FoodProperties extends java.lang.Record implements net.minecraft.world.item.component.ConsumableListener {
+  public static final com.mojang.serialization.Codec<net.minecraft.world.food.FoodProperties> DIRECT_CODEC;
+  public static final net.minecraft.network.codec.StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, net.minecraft.world.food.FoodProperties> DIRECT_STREAM_CODEC;
+  public net.minecraft.world.food.FoodProperties(int, float, boolean);
+  public void onConsume(net.minecraft.world.level.Level, net.minecraft.world.entity.LivingEntity, net.minecraft.world.item.ItemStack, net.minecraft.world.item.component.Consumable);
+  public final java.lang.String toString();
+  public final int hashCode();
+  public final boolean equals(java.lang.Object);
+  public int nutrition();
+  public float saturation();
+  public boolean canAlwaysEat();
+  static {};
+}
+
+=== Player food/abilities/fishing ===
+  protected net.minecraft.world.food.FoodData foodData;
+  public net.minecraft.world.entity.projectile.FishingHook fishing;
+  public net.minecraft.world.entity.player.Abilities getAbilities();
+  public void causeFoodExhaustion(float);
+  protected boolean hasEnoughFoodToDoExhaustiveManoeuvres();
+  public net.minecraft.world.food.FoodData getFoodData();
+  public void onUpdateAbilities();
+  public net.minecraft.world.entity.projectile.FishingHook fishing;
+    26845  1980-02-01 00:00   net/minecraft/world/entity/projectile/FishingHook.class
+
+=== ServerboundPlayerActionPacket ===
+Compiled from "ServerboundPlayerActionPacket.java"
+public class net.minecraft.network.protocol.game.ServerboundPlayerActionPacket implements net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ServerGamePacketListener> {
+  public static final net.minecraft.network.codec.StreamCodec<net.minecraft.network.FriendlyByteBuf, net.minecraft.network.protocol.game.ServerboundPlayerActionPacket> STREAM_CODEC;
+  public net.minecraft.network.protocol.game.ServerboundPlayerActionPacket(net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action, net.minecraft.core.BlockPos, net.minecraft.core.Direction, int);
+  public net.minecraft.network.protocol.game.ServerboundPlayerActionPacket(net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action, net.minecraft.core.BlockPos, net.minecraft.core.Direction);
+  public net.minecraft.network.protocol.PacketType<net.minecraft.network.protocol.game.ServerboundPlayerActionPacket> type();
+  public void handle(net.minecraft.network.protocol.game.ServerGamePacketListener);
+  public net.minecraft.core.BlockPos getPos();
+  public net.minecraft.core.Direction getDirection();
+  public net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action getAction();
+  public int getSequence();
+  public void handle(net.minecraft.network.PacketListener);
+  static {};
+}
+Compiled from "ServerboundPlayerActionPacket.java"
+public final class net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action extends java.lang.Enum<net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action> {
+  public static final net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action START_DESTROY_BLOCK;
+  public static final net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action ABORT_DESTROY_BLOCK;
+  public static final net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action STOP_DESTROY_BLOCK;
+  public static final net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action DROP_ALL_ITEMS;
+  public static final net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action DROP_ITEM;
+  public static final net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action RELEASE_USE_ITEM;
+  public static final net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action SWAP_ITEM_WITH_OFFHAND;
+  public static final net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action STAB;
+  public static net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action[] values();
+  public static net.minecraft.network.protocol.game.ServerboundPlayerActionPacket$Action valueOf(java.lang.String);
+  static {};
+}
+
+=== ServerboundClientCommandPacket ===
+Compiled from "ServerboundClientCommandPacket.java"
+public class net.minecraft.network.protocol.game.ServerboundClientCommandPacket implements net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ServerGamePacketListener> {
+  public static final net.minecraft.network.codec.StreamCodec<net.minecraft.network.FriendlyByteBuf, net.minecraft.network.protocol.game.ServerboundClientCommandPacket> STREAM_CODEC;
+  public net.minecraft.network.protocol.game.ServerboundClientCommandPacket(net.minecraft.network.protocol.game.ServerboundClientCommandPacket$Action);
+  public net.minecraft.network.protocol.PacketType<net.minecraft.network.protocol.game.ServerboundClientCommandPacket> type();
+  public void handle(net.minecraft.network.protocol.game.ServerGamePacketListener);
+  public net.minecraft.network.protocol.game.ServerboundClientCommandPacket$Action getAction();
+  public void handle(net.minecraft.network.PacketListener);
+  static {};
+}
+Compiled from "ServerboundClientCommandPacket.java"
+public final class net.minecraft.network.protocol.game.ServerboundClientCommandPacket$Action extends java.lang.Enum<net.minecraft.network.protocol.game.ServerboundClientCommandPacket$Action> {
+  public static final net.minecraft.network.protocol.game.ServerboundClientCommandPacket$Action PERFORM_RESPAWN;
+  public static final net.minecraft.network.protocol.game.ServerboundClientCommandPacket$Action REQUEST_STATS;
+  public static final net.minecraft.network.protocol.game.ServerboundClientCommandPacket$Action REQUEST_GAMERULE_VALUES;
+  public static net.minecraft.network.protocol.game.ServerboundClientCommandPacket$Action[] values();
+  public static net.minecraft.network.protocol.game.ServerboundClientCommandPacket$Action valueOf(java.lang.String);
+  static {};
+}
+
+=== ServerboundMovePlayerPacket Pos/Rot ===
+Compiled from "ServerboundMovePlayerPacket.java"
+public class net.minecraft.network.protocol.game.ServerboundMovePlayerPacket$Pos extends net.minecraft.network.protocol.game.ServerboundMovePlayerPacket {
+  public static final net.minecraft.network.codec.StreamCodec<net.minecraft.network.FriendlyByteBuf, net.minecraft.network.protocol.game.ServerboundMovePlayerPacket$Pos> STREAM_CODEC;
+  public net.minecraft.network.protocol.game.ServerboundMovePlayerPacket$Pos(net.minecraft.world.phys.Vec3, boolean, boolean);
+  public net.minecraft.network.protocol.game.ServerboundMovePlayerPacket$Pos(double, double, double, boolean, boolean);
+  public net.minecraft.network.protocol.PacketType<net.minecraft.network.protocol.game.ServerboundMovePlayerPacket$Pos> type();
+  public void handle(net.minecraft.network.PacketListener);
+  static {};
+}
+Compiled from "ServerboundMovePlayerPacket.java"
+public class net.minecraft.network.protocol.game.ServerboundMovePlayerPacket$Rot extends net.minecraft.network.protocol.game.ServerboundMovePlayerPacket {
+  public static final net.minecraft.network.codec.StreamCodec<net.minecraft.network.FriendlyByteBuf, net.minecraft.network.protocol.game.ServerboundMovePlayerPacket$Rot> STREAM_CODEC;
+  public net.minecraft.network.protocol.game.ServerboundMovePlayerPacket$Rot(float, float, boolean, boolean);
+  public net.minecraft.network.protocol.PacketType<net.minecraft.network.protocol.game.ServerboundMovePlayerPacket$Rot> type();
+  public void handle(net.minecraft.network.PacketListener);
+  static {};
+}
+
+=== MouseHandler (middle) ===
+  public boolean isLeftPressed();
+  public boolean isMiddlePressed();
+  public boolean isRightPressed();
+
+=== ClientPacketListener (send/handle) ===
+  public void handleLogin(net.minecraft.network.protocol.game.ClientboundLoginPacket);
+  public void handleAddEntity(net.minecraft.network.protocol.game.ClientboundAddEntityPacket);
+  public void handleSetEntityMotion(net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket);
+  public void handleSetEntityData(net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket);
+  public void handleEntityPositionSync(net.minecraft.network.protocol.game.ClientboundEntityPositionSyncPacket);
+  public void handleTeleportEntity(net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket);
+  public void handleTickingState(net.minecraft.network.protocol.game.ClientboundTickingStatePacket);
+  public void handleTickingStep(net.minecraft.network.protocol.game.ClientboundTickingStepPacket);
+  public void handleSetHeldSlot(net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket);
+  public void handleMoveEntity(net.minecraft.network.protocol.game.ClientboundMoveEntityPacket);
+  public void handleMinecartAlongTrack(net.minecraft.network.protocol.game.ClientboundMoveMinecartPacket);
+  public void handleRotateMob(net.minecraft.network.protocol.game.ClientboundRotateHeadPacket);
+  public void handleRemoveEntities(net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket);
+  public void handleMovePlayer(net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket);
+  public void handleRotatePlayer(net.minecraft.network.protocol.game.ClientboundPlayerRotationPacket);
+  public void handleChunkBlocksUpdate(net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket);
+  public void handleLevelChunkWithLight(net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket);
+  public void handleChunksBiomes(net.minecraft.network.protocol.game.ClientboundChunksBiomesPacket);
+  public void handleForgetLevelChunk(net.minecraft.network.protocol.game.ClientboundForgetLevelChunkPacket);
+  public void handleBlockUpdate(net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket);
+  public void handleConfigurationStart(net.minecraft.network.protocol.game.ClientboundStartConfigurationPacket);
+  public void handleTakeItemEntity(net.minecraft.network.protocol.game.ClientboundTakeItemEntityPacket);
+  public void handleSystemChat(net.minecraft.network.protocol.game.ClientboundSystemChatPacket);
+  public void handlePlayerChat(net.minecraft.network.protocol.game.ClientboundPlayerChatPacket);
+  public void handleDisguisedChat(net.minecraft.network.protocol.game.ClientboundDisguisedChatPacket);
+  public void handleDeleteChat(net.minecraft.network.protocol.game.ClientboundDeleteChatPacket);
+  public void handleAnimate(net.minecraft.network.protocol.game.ClientboundAnimatePacket);
+  public void handleHurtAnimation(net.minecraft.network.protocol.game.ClientboundHurtAnimationPacket);
+  public void handleSetTime(net.minecraft.network.protocol.game.ClientboundSetTimePacket);
+  public void handleSetSpawn(net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPacket);
+  public void handleSetEntityPassengersPacket(net.minecraft.network.protocol.game.ClientboundSetPassengersPacket);
+  public void handleEntityLinkPacket(net.minecraft.network.protocol.game.ClientboundSetEntityLinkPacket);
+  public void handleEntityEvent(net.minecraft.network.protocol.game.ClientboundEntityEventPacket);
+  public void handleDamageEvent(net.minecraft.network.protocol.game.ClientboundDamageEventPacket);
+  public void handleSetHealth(net.minecraft.network.protocol.game.ClientboundSetHealthPacket);
+  public void handleSetExperience(net.minecraft.network.protocol.game.ClientboundSetExperiencePacket);
+  public void handleRespawn(net.minecraft.network.protocol.game.ClientboundRespawnPacket);
+  public void handleExplosion(net.minecraft.network.protocol.game.ClientboundExplodePacket);
+  public void handleMountScreenOpen(net.minecraft.network.protocol.game.ClientboundMountScreenOpenPacket);
+  public void handleOpenScreen(net.minecraft.network.protocol.game.ClientboundOpenScreenPacket);
+grep: write error: Broken pipe
+
+=== Abilities ===
+Compiled from "Abilities.java"
+public class net.minecraft.world.entity.player.Abilities {
+  private static final boolean DEFAULT_INVULNERABLE;
+  private static final boolean DEFAULY_FLYING;
+  private static final boolean DEFAULT_MAY_FLY;
+  private static final boolean DEFAULT_INSTABUILD;
+  private static final boolean DEFAULT_MAY_BUILD;
+  private static final float DEFAULT_FLYING_SPEED;
+  private static final float DEFAULT_WALKING_SPEED;
+  public boolean invulnerable;
+  public boolean flying;
+  public boolean mayfly;
+  public boolean instabuild;
+  public boolean mayBuild;
+  private float flyingSpeed;
+  private float walkingSpeed;
+  public net.minecraft.world.entity.player.Abilities();
+  public float getFlyingSpeed();
+  public void setFlyingSpeed(float);
+  public float getWalkingSpeed();
+  public void setWalkingSpeed(float);
+  public net.minecraft.world.entity.player.Abilities$Packed pack();
+  public void apply(net.minecraft.world.entity.player.Abilities$Packed);
+}
+
+=== DeathScreen ===
+Compiled from "DeathScreen.java"
+public class net.minecraft.client.gui.screens.DeathScreen extends net.minecraft.client.gui.screens.Screen {
+  private static final int TITLE_SCALE;
+  private static final net.minecraft.resources.Identifier DRAFT_REPORT_SPRITE;
+  private int delayTicker;
+  private final net.minecraft.network.chat.Component causeOfDeath;
+  private final boolean hardcore;
+  private final net.minecraft.client.player.LocalPlayer player;
+  private final net.minecraft.network.chat.Component deathScore;
+  private final java.util.List<net.minecraft.client.gui.components.Button> exitButtons;
+  private net.minecraft.client.gui.components.Button exitToTitleButton;
+  public net.minecraft.client.gui.screens.DeathScreen(net.minecraft.network.chat.Component, boolean, net.minecraft.client.player.LocalPlayer);
+  protected void init();
+  public boolean shouldCloseOnEsc();
+  private void handleExitToTitleScreen();
+  private void exitToTitleScreen();
+  public void extractRenderState(net.minecraft.client.gui.GuiGraphicsExtractor, int, int, float);
+  private void visitText(net.minecraft.client.gui.ActiveTextCollector);
+  public void extractBackground(net.minecraft.client.gui.GuiGraphicsExtractor, int, int, float);
+  private static void extractDeathBackground(net.minecraft.client.gui.GuiGraphicsExtractor, int, int);
+
+=== Options (fov/gamma/keys) ===
+  public final net.minecraft.client.KeyMapping keyUp;
+  public final net.minecraft.client.KeyMapping keyLeft;
+  public final net.minecraft.client.KeyMapping keyDown;
+  public final net.minecraft.client.KeyMapping keyRight;
+  public net.minecraft.client.OptionInstance<java.lang.Integer> fov();
+  public net.minecraft.client.OptionInstance<java.lang.Double> fovEffectScale();
+  public net.minecraft.client.OptionInstance<java.lang.Double> gamma();
+
+=== SimpleOption get/set ===
+
+=== ItemStack getDestroySpeed ===
+  public float getDestroySpeed(net.minecraft.world.level.block.state.BlockState);
+  public boolean isDamageableItem();
+  public boolean isDamaged();
+  public int getDamageValue();
+  public void setDamageValue(int);
+  public int getMaxDamage();
+  public boolean nextDamageWillBreak();
+  public void onDestroyed(net.minecraft.world.entity.item.ItemEntity);
+
+=== BlockStateBase (collision/destroy/fluid) ===
+  public boolean isAir();
+  public float getDestroySpeed(net.minecraft.world.level.BlockGetter, net.minecraft.core.BlockPos);
+  public net.minecraft.world.phys.shapes.VoxelShape getCollisionShape(net.minecraft.world.level.BlockGetter, net.minecraft.core.BlockPos);
+  public net.minecraft.world.phys.shapes.VoxelShape getCollisionShape(net.minecraft.world.level.BlockGetter, net.minecraft.core.BlockPos, net.minecraft.world.phys.shapes.CollisionContext);
+  public boolean is(net.minecraft.tags.TagKey<net.minecraft.world.level.block.Block>, java.util.function.Predicate<net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase>);
+  public net.minecraft.world.level.material.FluidState getFluidState();
+
+=== AbstractContainerMenu (slots) ===
+  public static final int SLOTS_PER_ROW;
+  private final net.minecraft.core.NonNullList<net.minecraft.world.item.ItemStack> lastSlots;
+  public final net.minecraft.core.NonNullList<net.minecraft.world.inventory.Slot> slots;
+  private final java.util.List<net.minecraft.world.inventory.DataSlot> dataSlots;
+  private final net.minecraft.core.NonNullList<net.minecraft.world.inventory.RemoteSlot> remoteSlots;
+  private final it.unimi.dsi.fastutil.ints.IntList remoteDataSlots;
+  public final int containerId;
+  private final java.util.Set<net.minecraft.world.inventory.Slot> quickcraftSlots;
+  protected void addInventoryHotbarSlots(net.minecraft.world.Container, int, int);
+  protected void addInventoryExtendedSlots(net.minecraft.world.Container, int, int);
+
+=== Entity (move/collision) ===
+  private net.minecraft.core.BlockPos blockPosition;
+  private net.minecraft.world.phys.Vec3 deltaMovement;
+  public boolean horizontalCollision;
+  public boolean minorHorizontalCollision;
+  public void setPose(net.minecraft.world.entity.Pose);
+  public final void setPos(net.minecraft.world.phys.Vec3);
+  public void setPos(double, double, double);
+  protected boolean isHorizontalCollisionMinor(net.minecraft.world.phys.Vec3);
+  public boolean isUnderWater();
+  public boolean dismountsUnderwater();
+  public void setShiftKeyDown(boolean);
+  public boolean isShiftKeyDown();
+  public void teleportSetPosition(net.minecraft.world.entity.PositionMoveRotation, java.util.Set<net.minecraft.world.entity.Relative>);
+  public void teleportSetPosition(net.minecraft.world.entity.PositionMoveRotation, net.minecraft.world.entity.PositionMoveRotation, java.util.Set<net.minecraft.world.entity.Relative>);
+  public net.minecraft.core.BlockPos blockPosition();
+
+=== LivingEntity (ticks using / food) ===
+  public net.minecraft.world.item.ItemStack getItemInHand(net.minecraft.world.InteractionHand);
+  public void jumpFromGround();
+  public int getTicksUsingItem();
+  public float getTicksUsingItem(float);
+
+=== Items (лук/удочка/ракета/яблоко) ===
+  public static final net.minecraft.world.item.Item BOW;
+  public static final net.minecraft.world.item.Item GOLDEN_APPLE;
+  public static final net.minecraft.world.item.Item ENCHANTED_GOLDEN_APPLE;
+  public static final net.minecraft.world.item.Item FISHING_ROD;
+  public static final net.minecraft.world.item.Item FIREWORK_ROCKET;
+
+=== DataComponents FOOD/USE_EFFECTS ===
+  public static final net.minecraft.core.component.DataComponentType<net.minecraft.world.item.component.UseEffects> USE_EFFECTS;
+  public static final net.minecraft.core.component.DataComponentType<net.minecraft.world.food.FoodProperties> FOOD;
+
+=== Level getGameTime ===
+  public net.minecraft.world.level.block.state.BlockState getBlockState(net.minecraft.core.BlockPos);
+
+=== Gui setOverlayMessage/chat ===
+  public static final net.minecraft.network.chat.Component SAVING_LEVEL;
+  public net.minecraft.client.gui.screens.Overlay overlay();
+  public void setOverlay(net.minecraft.client.gui.screens.Overlay);
+  public net.minecraft.client.multiplayer.chat.ChatListener chatListener();
+  public void openChatScreen(net.minecraft.client.gui.components.ChatComponent$ChatMethod);
+  public void openChatAndAddText(net.minecraft.client.gui.components.ChatComponent$ChatMethod, java.lang.String);
+
+=== getAttackStrengthScale/crosshairPickEntity ===
+  public float getAttackStrengthScale(float);
+  public net.minecraft.world.entity.Entity crosshairPickEntity;

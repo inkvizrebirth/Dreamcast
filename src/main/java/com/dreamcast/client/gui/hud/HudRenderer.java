@@ -747,7 +747,7 @@ public final class HudRenderer {
 		}
 		Font font = client.font;
 		int width = 132;
-		int height = 52;
+		int height = 63;
 		int[] position = HudLayout.position(HudInfoModule.ELEMENT_SESSION, MARGIN, 172);
 		int x = position[0];
 		int y = position[1];
@@ -768,6 +768,8 @@ public final class HudRenderer {
 				x + 8, y + 30, RenderUtils.withAlpha(TEXT_SECONDARY, alpha));
 		RenderUtils.textFlat(graphics, font, String.format(java.util.Locale.ROOT, "Скорость  %.1f BPS", bps),
 				x + 8, y + 41, RenderUtils.withAlpha(TEXT_SECONDARY, alpha));
+		RenderUtils.textFlat(graphics, font, "Убийства  " + com.dreamcast.client.session.SessionStats.getKills(),
+				x + 8, y + 52, RenderUtils.withAlpha(TEXT_SECONDARY, alpha));
 	}
 
 	private static String formatDurationTicks(int ticks) {

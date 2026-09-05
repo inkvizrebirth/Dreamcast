@@ -4,6 +4,7 @@ import com.dreamcast.client.module.Module;
 import com.dreamcast.client.module.ModuleCategory;
 import com.dreamcast.client.util.KeyOwnership;
 import com.dreamcast.client.util.TargetLockLogic;
+import com.dreamcast.client.system.FriendsManager;
 import com.dreamcast.client.module.ModuleManager;
 import com.dreamcast.client.settings.BooleanSetting;
 import com.dreamcast.client.settings.ElementListSetting;
@@ -825,6 +826,11 @@ public class KillAuraModule extends Module {
 				return false;
 			}
 			if (ignoreCreative.isEnabled() && ((Player) entity).isCreative()) {
+				return false;
+			}
+			// Друзей не бьём, пока включён модуль Friends с защитой
+			if (com.dreamcast.client.module.impl.FriendsModule.auraProtects()
+					&& FriendsManager.isFriend(entity.getName().getString())) {
 				return false;
 			}
 		} else if (entity.getType().getCategory() == MobCategory.MONSTER) {

@@ -1,12 +1,19 @@
 package com.dreamcast.client.module;
 
-/** Категории модулей (вкладки в левой части ClickGUI). */
+/**
+ * Категории модулей (вкладки в левой части ClickGUI).
+ *
+ * Набор вкладок как в Meteor Client: Бой, Движение, Игрок, Мир, Рендер,
+ * Прочее и HUD.
+ */
 public enum ModuleCategory {
 
 	HUD("HUD", 0xFF45E3FF, "◎"),
-	RENDER("Рендер", 0xFF7C6CFF, "◆"),
-	MOVEMENT("Движение", 0xFF8DE06C, "»"),
 	COMBAT("Бой", 0xFFFF5C7A, "✖"),
+	MOVEMENT("Движение", 0xFF8DE06C, "»"),
+	PLAYER("Игрок", 0xFFE0A55C, "☺"),
+	WORLD("Мир", 0xFFC58CFF, "▣"),
+	RENDER("Рендер", 0xFF7C6CFF, "◆"),
 	MISC("Прочее", 0xFFFFC66C, "≡");
 
 	private final String displayName;

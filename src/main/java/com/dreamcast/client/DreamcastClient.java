@@ -24,7 +24,7 @@ public class DreamcastClient implements ClientModInitializer {
 	public static final String MOD_ID = "dreamcast";
 	/** Пользовательское имя клиента: на экранах — короткое «Dreamcast», без «DLC». */
 	public static final String MOD_NAME = "Dreamcast";
-	public static final String MOD_VERSION = "1.1.4";
+	public static final String MOD_VERSION = "2.0.0";
 	/** Короткое имя для логотипа в меню и HUD. */
 	public static final String LOGO_TEXT = "DREAMCAST";
 
@@ -41,9 +41,12 @@ public class DreamcastClient implements ClientModInitializer {
 		// Порядок важен: сначала читаем конфиг, потом создаём модули (они подхватят сохранённые значения)
 		ConfigManager.load();
 		com.dreamcast.client.util.AltsManager.load();
+		com.dreamcast.client.system.FriendsManager.load();
 		ModuleManager.init();
 		HudRenderer.register();
 		WorldRenderHook.register();
+		// Команды чата («.toggle», «.friend», «.config»…) — после модулей
+		com.dreamcast.client.command.CommandManager.init();
 
 		// Перехват ПКМ делаем в начале тика: игра обрабатывает «использовать» позже,
 		// внутри того же тика, поэтому успеваем нажатие погасить
@@ -60,6 +63,8 @@ public class DreamcastClient implements ClientModInitializer {
 			com.dreamcast.client.util.KeyOwnership.refresh(client);
 			// Отложенные восстановления инвентаря (после закрытия контейнера)
 			com.dreamcast.client.util.PendingRestores.tick(client);
+			// Счётчики сессии (убийства для HUD)
+			com.dreamcast.client.session.SessionStats.tick();
 			// Уведомления живут на своих таймерах
 			Notifications.tick();
 		});
@@ -68,7 +73,13 @@ public class DreamcastClient implements ClientModInitializer {
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
 			com.dreamcast.client.util.PendingRestores.clear();
 			com.dreamcast.client.util.KeyOwnership.clear(client);
+			// Blink: пакеты для мёртвого соединения не нужны
+			com.dreamcast.client.module.impl.BlinkModule.onDisconnect();
 		});
+
+		// Новый мир/игрок — новая сессия статистики
+		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) ->
+				com.dreamcast.client.session.SessionStats.reset());
 
 		// Сохраняем настройки при закрытии игры
 		Runtime.getRuntime().addShutdownHook(new Thread(ConfigManager::save, "dreamcast-config-save"));

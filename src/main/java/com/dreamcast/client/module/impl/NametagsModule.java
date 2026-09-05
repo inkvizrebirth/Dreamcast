@@ -100,6 +100,12 @@ public class NametagsModule extends Module {
 			}
 			lines.add(name);
 
+			// Метка друга — первой дополнительной строкой
+			if (com.dreamcast.client.module.impl.FriendsModule.isFriend(player.getGameProfile().name())) {
+				lines.add(net.minecraft.network.chat.Component.literal("★ Друг")
+						.withStyle(net.minecraft.ChatFormatting.GREEN));
+			}
+
 			if (showHeld.isEnabled()) {
 				ItemStack held = player.getMainHandItem();
 				if (!held.isEmpty()) {

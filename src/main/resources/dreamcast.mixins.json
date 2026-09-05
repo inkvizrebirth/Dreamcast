@@ -2,23 +2,24 @@
   "required": true,
   "minVersion": "0.8",
   "package": "com.dreamcast.client.mixin",
-  "client": [
-    "ChatScreenMixin",
-    "DreamcastGuiMixin",
-    "AvatarRendererMixin",
-    "CameraMixin",
-    "EntityMixin",
-    "GameRendererMixin",
-    "HudMixin",
-    "ItemInHandRendererMixin",
-    "KeyboardInputMixin",
-    "KeyMappingAccessor",
-    "MinecraftMixin",
-    "MouseHandlerMixin",
-    "SubmitNodeCollectionMixin",
-    "LocalPlayerMixin",
-    "MultiPlayerGameModeMixin"
-  ],
+	"client": [
+		"ChatScreenMixin",
+		"DreamcastGuiMixin",
+		"AvatarRendererMixin",
+		"CameraMixin",
+		"ClientPacketListenerMixin",
+		"EntityMixin",
+		"GameRendererMixin",
+		"HudMixin",
+		"ItemInHandRendererMixin",
+		"KeyboardInputMixin",
+		"KeyMappingAccessor",
+		"MinecraftMixin",
+		"MouseHandlerMixin",
+		"SubmitNodeCollectionMixin",
+		"LocalPlayerMixin",
+		"MultiPlayerGameModeMixin"
+	],
   "injectors": {
     "defaultRequire": 1
   }

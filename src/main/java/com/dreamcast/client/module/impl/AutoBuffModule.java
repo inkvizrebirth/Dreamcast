@@ -158,7 +158,7 @@ public class AutoBuffModule extends Module {
 
 	public AutoBuffModule() {
 		super("auto_buff", "AutoBuff", "Автоматически пьёт и бросает бафф-зелья, лечится при низком HP",
-				ModuleCategory.MISC, GLFW.GLFW_KEY_UNKNOWN);
+				ModuleCategory.PLAYER, GLFW.GLFW_KEY_UNKNOWN);
 		pauseSeed = System.identityHashCode(this);
 	}
 

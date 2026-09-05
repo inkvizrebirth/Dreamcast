@@ -3,6 +3,37 @@ package com.dreamcast.client.module;
 import com.dreamcast.client.DreamcastClient;
 import com.dreamcast.client.config.ConfigManager;
 import com.dreamcast.client.module.impl.AutoMineModule;
+import com.dreamcast.client.module.impl.AntiAFKModule;
+import com.dreamcast.client.module.impl.AutoArmorModule;
+import com.dreamcast.client.module.impl.AutoClickerModule;
+import com.dreamcast.client.module.impl.AutoEatModule;
+import com.dreamcast.client.module.impl.AutoFishModule;
+import com.dreamcast.client.module.impl.AutoJumpModule;
+import com.dreamcast.client.module.impl.AutoRespawnModule;
+import com.dreamcast.client.module.impl.AutoToolModule;
+import com.dreamcast.client.module.impl.BlinkModule;
+import com.dreamcast.client.module.impl.BowAimbotModule;
+import com.dreamcast.client.module.impl.BreadcrumbsModule;
+import com.dreamcast.client.module.impl.ChestStealerModule;
+import com.dreamcast.client.module.impl.CriticalsModule;
+import com.dreamcast.client.module.impl.ElytraBoostModule;
+import com.dreamcast.client.module.impl.FlightModule;
+import com.dreamcast.client.module.impl.FriendsModule;
+import com.dreamcast.client.module.impl.FullBrightModule;
+import com.dreamcast.client.module.impl.HoleEspModule;
+import com.dreamcast.client.module.impl.JesusModule;
+import com.dreamcast.client.module.impl.LongJumpModule;
+import com.dreamcast.client.module.impl.MiddleClickFriendModule;
+import com.dreamcast.client.module.impl.NoHurtCamModule;
+import com.dreamcast.client.module.impl.NoRotateModule;
+import com.dreamcast.client.module.impl.NukerModule;
+import com.dreamcast.client.module.impl.SneakModule;
+import com.dreamcast.client.module.impl.SpeedModule;
+import com.dreamcast.client.module.impl.StepModule;
+import com.dreamcast.client.module.impl.TracersModule;
+import com.dreamcast.client.module.impl.TriggerBotModule;
+import com.dreamcast.client.module.impl.VelocityModule;
+import com.dreamcast.client.module.impl.ZoomModule;
 import com.dreamcast.client.module.impl.AutoTotemModule;
 import com.dreamcast.client.module.impl.AutoWalkModule;
 import com.dreamcast.client.module.impl.BlockEspModule;
@@ -53,24 +84,48 @@ public final class ModuleManager {
 		// строение важнее удара — так модули не перетягивают инвентарь
 		register(new AutoTotemModule());
 		register(new NoFallDamageModule());
+		register(new AutoEatModule());
 		register(new AutoBuffModule());
+		register(new AutoArmorModule());
 		register(new ScaffoldModule());
+		register(new NukerModule());
 		register(new KillAuraModule());
+		register(new TriggerBotModule());
+		register(new AutoClickerModule());
+		register(new BowAimbotModule());
+		register(new CriticalsModule());
+		register(new VelocityModule());
 		register(new HudInfoModule());
 		register(new ClickGuiModule());
 		register(new FreeCamModule());
 		register(new FreeLookModule());
+		register(new BlinkModule());
 		register(new AutoMineModule());
+		register(new AutoToolModule());
 		register(new AutoWalkModule());
 		register(new SprintModule());
+		register(new SpeedModule());
+		register(new FlightModule());
+		register(new JesusModule());
+		register(new LongJumpModule());
+		register(new StepModule());
+		register(new SneakModule());
+		register(new AutoJumpModule());
+		register(new ElytraBoostModule());
 		register(new NoFovModule());
+		register(new ZoomModule());
 		register(new NoBlindModule());
+		register(new FullBrightModule());
+		register(new NoHurtCamModule());
 		register(new HandShaderModule());
 		register(new ViewModelModule());
 		register(new MediaPlayerModule());
 		register(new TrailsModule());
+		register(new BreadcrumbsModule());
 		register(new EspModule());
+		register(new TracersModule());
 		register(new BlockEspModule());
+		register(new HoleEspModule());
 		register(new JumpEffectModule());
 		register(new SpiderModule());
 		register(new NametagsModule());
@@ -78,6 +133,13 @@ public final class ModuleManager {
 		register(new MacroModule());
 		register(new HitSoundsModule());
 		register(new HitParticlesModule());
+		register(new ChestStealerModule());
+		register(new AutoFishModule());
+		register(new AutoRespawnModule());
+		register(new AntiAFKModule());
+		register(new NoRotateModule());
+		register(new FriendsModule());
+		register(new MiddleClickFriendModule());
 	}
 
 	public static void register(Module module) {
@@ -98,6 +160,36 @@ public final class ModuleManager {
 		return MODULES.stream()
 				.filter(module -> module.getCategory() == category)
 				.toList();
+	}
+
+	/**
+	 * Поиск модуля по id или имени — для команд чата («.toggle kill_aura»).
+	 * Регистр не важен, пробелы в имени игнорируются.
+	 */
+	public static Module byId(String idOrName) {
+		if (idOrName == null || idOrName.isBlank()) {
+			return null;
+		}
+		String needle = idOrName.trim().toLowerCase(java.util.Locale.ROOT);
+		String compact = needle.replace(" ", "").replace("_", "");
+		for (Module module : MODULES) {
+			if (module.getId().equalsIgnoreCase(needle)) {
+				return module;
+			}
+		}
+		for (Module module : MODULES) {
+			if (module.getName().toLowerCase(java.util.Locale.ROOT).equals(needle)) {
+				return module;
+			}
+		}
+		for (Module module : MODULES) {
+			String moduleId = module.getId().replace("_", "");
+			String moduleName = module.getName().toLowerCase(java.util.Locale.ROOT).replace(" ", "");
+			if (moduleId.equalsIgnoreCase(compact) || moduleName.equals(compact)) {
+				return module;
+			}
+		}
+		return null;
 	}
 
 	@SuppressWarnings("unchecked")

@@ -3,7 +3,7 @@
   "id": "dreamcast",
   "version": "${version}",
   "name": "Dreamcast DLC",
-  "description": "Клиентский мод для Minecraft 26.2: свои меню, HUD, модули (Trails, ESP), музыкальный плеер и ViaFabricPlus.",
+  "description": "Утилити-клиент для Minecraft 26.2 в духе Meteor + LiquidBounce: 55+ модулей (бой, движение, игрок, мир, рендер), команды чата, друзья, профили конфигов, ClickGUI, HUD и встроенные ViaFabricPlus, Sodium, Lithium, ImmediatelyFast, Mod Menu.",
   "authors": [
     "inkvizrebirth"
   ],

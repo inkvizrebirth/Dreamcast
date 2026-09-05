@@ -75,6 +75,16 @@ public abstract class CameraMixin {
 	 */
 	@Inject(method = "getFov", at = @At("HEAD"), cancellable = true, require = 0)
 	private void dreamcast$staticFov(CallbackInfoReturnable<Float> cir) {
+		// Zoom в приоритете: приближение важнее фиксированного FOV
+		com.dreamcast.client.module.impl.ZoomModule zoom =
+				ModuleManager.find(com.dreamcast.client.module.impl.ZoomModule.class);
+		if (zoom != null) {
+			Float zoomed = zoom.currentFov();
+			if (zoomed != null) {
+				cir.setReturnValue(zoomed);
+				return;
+			}
+		}
 		NoFovModule module = ModuleManager.find(NoFovModule.class);
 		if (module != null && module.isEnabled()) {
 			cir.setReturnValue((float) module.getFov());

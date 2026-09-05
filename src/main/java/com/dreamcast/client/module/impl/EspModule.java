@@ -119,8 +119,19 @@ public class EspModule extends Module {
 		if (module == null || !module.glowFor(entity)) {
 			return 0;
 		}
+		if (entity instanceof Player
+				&& FriendsModule.highlights()
+				&& com.dreamcast.client.system.FriendsManager.isFriend(entity.getName().getString())) {
+			return FRIEND_COLOR;
+		}
 		return module.entityColorById(entity.getId());
 	}
+
+	/** Цвет друзей в ESP/Tracers. */
+	public static final int FRIEND_COLOR = 0xFF6BE08A;
+
+	/** Id сущностей-друзей из последнего сбора боксов — для boxColor. */
+	private static volatile java.util.Set<Integer> friendEntityIds = java.util.Set.of();
 
 	// ------------------------------------------------------------------
 	// Box (данные для world-рендера)
@@ -146,7 +157,12 @@ public class EspModule extends Module {
 	public List<EspBox> collectBoxes(Iterable<Entity> entities, double camX, double camY, double camZ) {
 		double maxSqr = (double) distance.get() * distance.get();
 		List<EspBox> result = new ArrayList<>();
+		java.util.Set<Integer> friends = new java.util.HashSet<>();
 		for (Entity entity : entities) {
+			if (entity instanceof Player
+					&& com.dreamcast.client.system.FriendsManager.isFriend(entity.getName().getString())) {
+				friends.add(entity.getId());
+			}
 			if (!isRenderTarget(entity)) {
 				continue;
 			}
@@ -163,6 +179,7 @@ public class EspModule extends Module {
 					(float) box.maxX, (float) box.maxY, (float) box.maxZ,
 					entity.getId()));
 		}
+		friendEntityIds = friends;
 		return result;
 	}
 
@@ -176,7 +193,9 @@ public class EspModule extends Module {
 
 	/** Цвет линии бокса на высоте y (для градиента по высоте). */
 	public int boxColor(int entityId, double y, double minY, double maxY) {
-		int base = entityColorById(entityId);
+		int base = friendEntityIds.contains(entityId) && FriendsModule.highlights()
+				? FRIEND_COLOR
+				: entityColorById(entityId);
 		if (gradient.isEnabled()) {
 			return WorldGeometry_verticalColor(base, secondColor.get(), y, minY, maxY);
 		}

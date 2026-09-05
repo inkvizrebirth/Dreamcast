@@ -36,6 +36,20 @@ public final class WorldRenderHook {
 	/** Боксы ESP, собранные на извлечении; атомарно меняются целиком. */
 	private static volatile List<EspModule.EspBox> espBoxes = List.of();
 
+	/** Линии Tracers: цель (мировые координаты) + цвет; старт — начало координат камеры. */
+	private static volatile List<com.dreamcast.client.module.impl.TracersModule.TracerLine> tracerLines = List.of();
+	private static volatile boolean tracersFromFeet;
+	private static volatile float[] tracerOrigin;
+
+	/** Хлебные крошки Breadcrumbs. */
+	private static volatile List<com.dreamcast.client.module.impl.BreadcrumbsModule.Crumb> crumbs = List.of();
+	private static volatile int crumbColor;
+
+	/** Дырки HoleESP. */
+	private static volatile List<com.dreamcast.client.module.impl.HoleEspModule.HoleBox> holes = List.of();
+	private static volatile int holeSafeColor;
+	private static volatile int holeUnsafeColor;
+
 	private WorldRenderHook() {
 	}
 
@@ -57,6 +71,38 @@ public final class WorldRenderHook {
 			com.dreamcast.client.module.impl.ScaffoldModule scaffold =
 					ModuleManager.find(com.dreamcast.client.module.impl.ScaffoldModule.class);
 			scaffoldPreview = scaffold != null ? scaffold.previewPos() : null;
+
+			// Tracers / Breadcrumbs / HoleESP: снапшоты тиковых данных модулей
+			com.dreamcast.client.module.impl.TracersModule tracers =
+					ModuleManager.find(com.dreamcast.client.module.impl.TracersModule.class);
+			if (tracers != null && tracers.isEnabled()) {
+				tracerLines = tracers.currentLines();
+				tracersFromFeet = tracers.linesFromFeet();
+			} else {
+				tracerLines = List.of();
+			}
+			com.dreamcast.client.module.impl.BreadcrumbsModule breadcrumbs =
+					ModuleManager.find(com.dreamcast.client.module.impl.BreadcrumbsModule.class);
+			if (breadcrumbs != null && breadcrumbs.isEnabled()) {
+				crumbs = breadcrumbs.currentCrumbs();
+				crumbColor = breadcrumbs.trailColor();
+			} else {
+				crumbs = List.of();
+			}
+			com.dreamcast.client.module.impl.HoleEspModule holeEsp =
+					ModuleManager.find(com.dreamcast.client.module.impl.HoleEspModule.class);
+			if (holeEsp != null && holeEsp.isEnabled()) {
+				holes = holeEsp.currentHoles();
+				holeSafeColor = holeEsp.colorFor(true);
+				holeUnsafeColor = holeEsp.colorFor(false);
+			} else {
+				holes = List.of();
+			}
+			net.minecraft.client.Minecraft tracerClient = net.minecraft.client.Minecraft.getInstance();
+			if (tracerClient != null && tracerClient.player != null) {
+				net.minecraft.world.phys.Vec3 feet = tracerClient.player.position();
+				tracerOrigin = new float[]{(float) feet.x, (float) feet.y, (float) feet.z};
+			}
 
 			EspModule esp = ModuleManager.find(EspModule.class);
 			if (esp == null || !esp.wantsBoxes()) {
@@ -116,8 +162,12 @@ public final class WorldRenderHook {
 			boolean hasHits = hitParticles != null && hitParticles.wantsWaves();
 			boolean hasTags = nametags != null && nametags.wantsTags();
 			net.minecraft.core.BlockPos preview = scaffoldPreview;
+			var tracersNow = tracerLines;
+			var crumbsNow = crumbs;
+			var holesNow = holes;
 			if (!hasTrail && boxes.isEmpty() && !hasRings && !hasHits && !hasTags
-					&& targetBar == null && blockBoxes.isEmpty() && preview == null) {
+					&& targetBar == null && blockBoxes.isEmpty() && preview == null
+					&& tracersNow.isEmpty() && crumbsNow.size() < 2 && holesNow.isEmpty()) {
 				return;
 			}
 
@@ -155,13 +205,22 @@ public final class WorldRenderHook {
 						if (preview != null) {
 							drawScaffoldPreview(preview, pose, buffer, camX, camY, camZ, unitsPerPixel);
 						}
-						if (hasRings) {
-							drawJumpRings(jumpEffect, pose, buffer, camX, camY, camZ, unitsPerPixel, now);
-						}
-						if (hasHits) {
-							drawHitWaves(hitParticles, pose, buffer, camX, camY, camZ, unitsPerPixel, now);
-						}
-					});
+					if (hasRings) {
+						drawJumpRings(jumpEffect, pose, buffer, camX, camY, camZ, unitsPerPixel, now);
+					}
+					if (hasHits) {
+						drawHitWaves(hitParticles, pose, buffer, camX, camY, camZ, unitsPerPixel, now);
+					}
+					if (!tracersNow.isEmpty()) {
+						drawTracers(tracersNow, pose, buffer, camX, camY, camZ, unitsPerPixel);
+					}
+					if (crumbsNow.size() >= 2) {
+						drawBreadcrumbs(crumbsNow, pose, buffer, camX, camY, camZ, unitsPerPixel);
+					}
+					if (!holesNow.isEmpty()) {
+						drawHoles(holesNow, pose, buffer, camX, camY, camZ, unitsPerPixel);
+					}
+				});
 					// Nametags: текстовые биллборды — той же трубой, что ванильные ники
 					if (hasTags) {
 						drawNametags(context, nametags, camX, camY, camZ);
@@ -581,8 +640,7 @@ public final class WorldRenderHook {
 	}
 
 	/** Режим «только углы»: короткие скобки в восьми углах бокса. */
-	private static void drawCornerBrackets(PoseStack.Pose pose, VertexConsumer buffer,
-	                                       double minX, double minY, double minZ,
+	private static void drawCornerBrackets(PoseStack.Pose pose, VertexConsumer buffer,	                                       double minX, double minY, double minZ,
 	                                       double maxX, double maxY, double maxZ,
 	                                       int colorTop, int colorBottom,
 	                                       float width, float unitsPerPixel) {
@@ -609,6 +667,69 @@ public final class WorldRenderHook {
 					cx, cy, cz, color,
 					cx, cy, cz == minZ ? cz + sizeZ : cz - sizeZ, color,
 					width, unitsPerPixel);
+		}
+	}
+
+	// ------------------------------------------------------------------
+	// Tracers / Breadcrumbs / HoleESP
+	// ------------------------------------------------------------------
+
+	/** Лучи трассеров: от игрока (или камеры) к ногам цели. */
+	private static void drawTracers(
+			List<com.dreamcast.client.module.impl.TracersModule.TracerLine> lines,
+			PoseStack.Pose pose, VertexConsumer buffer,
+			double camX, double camY, double camZ, float unitsPerPixel) {
+		float[] origin = tracerOrigin;
+		if (origin == null) {
+			return;
+		}
+		// «От экрана» — старт у камеры, «от ног» — у позиции игрока
+		double startX = tracersFromFeet ? origin[0] : camX;
+		double startY = tracersFromFeet ? origin[1] : camY - 0.25;
+		double startZ = tracersFromFeet ? origin[2] : camZ;
+		for (var line : lines) {
+			int color = withAlpha(line.color(), 0xA0);
+			WorldGeometryRenderer.line(buffer, pose,
+					(float) (startX - camX), (float) (startY - camY), (float) (startZ - camZ), color,
+					line.x() - (float) camX, line.y() - (float) camY, line.z() - (float) camZ, color,
+					1.4F, unitsPerPixel);
+		}
+	}
+
+	/** Ломаная пути Breadcrumbs с затуханием к хвосту. */
+	private static void drawBreadcrumbs(
+			List<com.dreamcast.client.module.impl.BreadcrumbsModule.Crumb> points,
+			PoseStack.Pose pose, VertexConsumer buffer,
+			double camX, double camY, double camZ, float unitsPerPixel) {
+		int base = crumbColor;
+		for (int i = 1; i < points.size(); i++) {
+			var from = points.get(i - 1);
+			var to = points.get(i);
+			float t = (float) i / points.size();
+			int color = withAlpha(base, (int) (0xFF * (0.25F + 0.65F * t)));
+			WorldGeometryRenderer.line(buffer, pose,
+					from.x() - (float) camX, from.y() - (float) camY + 0.1F, from.z() - (float) camZ, color,
+					to.x() - (float) camX, to.y() - (float) camY + 0.1F, to.z() - (float) camZ, color,
+					2.2F, unitsPerPixel);
+		}
+	}
+
+	/** Плоские квадраты на дне дырок HoleESP. */
+	private static void drawHoles(
+			List<com.dreamcast.client.module.impl.HoleEspModule.HoleBox> holes,
+			PoseStack.Pose pose, VertexConsumer buffer,
+			double camX, double camY, double camZ, float unitsPerPixel) {
+		for (var hole : holes) {
+			int color = withAlpha(hole.safe() ? holeSafeColor : holeUnsafeColor, 0xB0);
+			float x0 = hole.x() - (float) camX;
+			float x1 = hole.x() + 1.0F - (float) camX;
+			float z0 = hole.z() - (float) camZ;
+			float z1 = hole.z() + 1.0F - (float) camZ;
+			float y = hole.y() - (float) camY + 0.03F;
+			WorldGeometryRenderer.line(buffer, pose, x0, y, z0, color, x1, y, z0, color, 2.0F, unitsPerPixel);
+			WorldGeometryRenderer.line(buffer, pose, x1, y, z0, color, x1, y, z1, color, 2.0F, unitsPerPixel);
+			WorldGeometryRenderer.line(buffer, pose, x1, y, z1, color, x0, y, z1, color, 2.0F, unitsPerPixel);
+			WorldGeometryRenderer.line(buffer, pose, x0, y, z1, color, x0, y, z0, color, 2.0F, unitsPerPixel);
 		}
 	}
 }

@@ -26,6 +26,19 @@ public abstract class MultiPlayerGameModeMixin {
 		if (player instanceof LocalPlayer localPlayer) {
 			com.dreamcast.client.module.impl.HitParticlesModule.onAttack(localPlayer, target);
 			com.dreamcast.client.module.impl.HitSoundsModule.onAttack(localPlayer, target);
+			com.dreamcast.client.module.impl.CriticalsModule.onAttack(localPlayer);
+			com.dreamcast.client.session.SessionStats.registerAttack(target);
 		}
+	}
+
+	/**
+	 * Начало копания блока — точка, где AutoTool успевает переключиться на
+	 * лучший инструмент: прогресс копания считается уже после этого вызова.
+	 * Метод «мягкий»: если имя сменится, AutoTool просто не сработает.
+	 */
+	@Inject(method = "startDestroyBlock", at = @At("HEAD"), require = 0)
+	private void dreamcast$autoTool(net.minecraft.core.BlockPos pos, net.minecraft.core.Direction direction,
+			CallbackInfo ci) {
+		com.dreamcast.client.module.impl.AutoToolModule.onBlockBreak(pos);
 	}
 }

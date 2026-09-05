@@ -41,6 +41,10 @@ public final class ConfigManager {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve(DreamcastClient.MOD_ID + ".json");
 
+	/** Папка именованных профилей (.config save/load) — config/dreamcast/configs/. */
+	private static final Path PROFILES_DIR = FabricLoader.getInstance().getConfigDir()
+			.resolve(DreamcastClient.MOD_ID).resolve("configs");
+
 	/** Конфиг прежних версий клиента (до переименования в Dreamcast). */
 	private static final Path LEGACY_PATH = FabricLoader.getInstance().getConfigDir().resolve("akarus.json");
 
@@ -194,10 +198,84 @@ public final class ConfigManager {
 		return value != null && value.isJsonPrimitive() ? value.getAsBoolean() : fallback;
 	}
 
+	/**
+	 * Именованные профили: «.config save pvp» пишет configs/pvp.json,
+	 * «.config load pvp» применяет его ко всем модулям.
+	 */
+	public static synchronized boolean saveTo(String profileName) {
+		try {
+			Files.createDirectories(PROFILES_DIR);
+			Path target = PROFILES_DIR.resolve(profileName + ".json");
+			writeJson(target, serialize());
+			return true;
+		} catch (IOException exception) {
+			DreamcastClient.LOGGER.error("Не удалось сохранить профиль {}", profileName, exception);
+			return false;
+		}
+	}
+
+	public static synchronized boolean loadFrom(String profileName) {
+		Path source = PROFILES_DIR.resolve(profileName + ".json");
+		if (!Files.exists(source)) {
+			return false;
+		}
+		try (BufferedReader reader = Files.newBufferedReader(source, StandardCharsets.UTF_8)) {
+			JsonObject parsed = GSON.fromJson(reader, JsonObject.class);
+			if (parsed == null) {
+				return false;
+			}
+			pending = parsed;
+			// Повторно применяем ко всем модулям — те же правила, что при старте
+			for (Module module : ModuleManager.getAll()) {
+				applyTo(module);
+			}
+			save();
+			return true;
+		} catch (IOException | com.google.gson.JsonParseException exception) {
+			DreamcastClient.LOGGER.error("Не удалось прочитать профиль {}", source, exception);
+			return false;
+		}
+	}
+
+	public static synchronized java.util.List<String> listProfiles() {
+		if (!Files.isDirectory(PROFILES_DIR)) {
+			return java.util.List.of();
+		}
+		try (var stream = Files.list(PROFILES_DIR)) {
+			return stream
+					.filter(path -> path.getFileName().toString().endsWith(".json"))
+					.map(path -> path.getFileName().toString().replaceFirst("\\.json$", ""))
+					.sorted()
+					.toList();
+		} catch (IOException exception) {
+			DreamcastClient.LOGGER.error("Не удалось прочитать папку профилей {}", PROFILES_DIR, exception);
+			return java.util.List.of();
+		}
+	}
+
+	public static synchronized boolean delete(String profileName) {
+		try {
+			return Files.deleteIfExists(PROFILES_DIR.resolve(profileName + ".json"));
+		} catch (IOException exception) {
+			DreamcastClient.LOGGER.error("Не удалось удалить профиль {}", profileName, exception);
+			return false;
+		}
+	}
+
 	/** Сохраняет состояние всех модулей на диск. */
 	// synchronized: save вызывается и из тика/меню, и из shutdown-hook при выходе —
 	// без блокировки два потока могли бы писать один файл одновременно и испортить его
 	public static synchronized void save() {
+		try {
+			Files.createDirectories(PATH.getParent());
+			writeJson(PATH, serialize());
+		} catch (IOException exception) {
+			DreamcastClient.LOGGER.error("Не удалось сохранить конфиг {}", PATH, exception);
+		}
+	}
+
+	/** Собирает состояние всех модулей в JSON-дерево. */
+	private static JsonObject serialize() {
 		JsonObject root = new JsonObject();
 		JsonObject modules = new JsonObject();
 
@@ -243,24 +321,22 @@ public final class ConfigManager {
 		}
 
 		root.add("modules", modules);
+		return root;
+	}
 
+	/** Атомарная запись JSON: сначала во временный файл, затем move с заменой. */
+	private static void writeJson(Path target, JsonObject root) throws IOException {
+		Files.createDirectories(target.getParent());
+		Path temp = target.resolveSibling(target.getFileName() + ".tmp");
+		Files.writeString(temp, GSON.toJson(root), StandardCharsets.UTF_8);
 		try {
-			Files.createDirectories(PATH.getParent());
-			// Атомарная запись: сначала во временный файл, затем move с заменой.
-			// Прямая запись при краше посреди сериализации оставляла бы пустой конфиг.
-			Path temp = PATH.resolveSibling(PATH.getFileName() + ".tmp");
-			Files.writeString(temp, GSON.toJson(root), StandardCharsets.UTF_8);
-			try {
-				Files.move(temp, PATH,
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING,
-						java.nio.file.StandardCopyOption.ATOMIC_MOVE);
-			} catch (java.nio.file.AtomicMoveNotSupportedException atomicUnsupported) {
-				// Файловая система без атомарного move (некоторые сетевые/FUSE):
-				// обычный move с заменой всё равно лучше прямой записи
-				Files.move(temp, PATH, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-			}
-		} catch (IOException exception) {
-			DreamcastClient.LOGGER.error("Не удалось сохранить конфиг {}", PATH, exception);
+			Files.move(temp, target,
+					java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+					java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+		} catch (java.nio.file.AtomicMoveNotSupportedException atomicUnsupported) {
+			// Файловая система без атомарного move (некоторые сетевые/FUSE):
+			// обычный move с заменой всё равно лучше прямой записи
+			Files.move(temp, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 		}
 	}
 

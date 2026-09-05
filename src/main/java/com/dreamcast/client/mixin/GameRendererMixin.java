@@ -35,4 +35,36 @@ public abstract class GameRendererMixin {
 			cir.setReturnValue(null);
 		}
 	}
+
+	/**
+	 * NoHurtCam: тряска камеры при получении урона.
+	 * {@code bobHurt} — приватный метод, который добавляет «ударный» наклон;
+	 * отменяем его целиком, картинка при уроне остаётся неподвижной.
+	 */
+	@Inject(method = "bobHurt", at = @At("HEAD"), cancellable = true, require = 0)
+	private void dreamcast$noHurtCam(Object cameraRenderState, com.mojang.blaze3d.vertex.PoseStack poseStack,
+			CallbackInfo ci) {
+		com.dreamcast.client.module.impl.NoHurtCamModule module =
+				ModuleManager.find(com.dreamcast.client.module.impl.NoHurtCamModule.class);
+		if (module != null && module.isEnabled() && module.noHurtCam()) {
+			ci.cancel();
+		}
+	}
+
+	/**
+	 * NoBob: покачивание камеры при ходьбе. Метод кладёт в стек матриц
+	 * покачивание — отменяем в самом начале, стек остаётся чистым.
+	 *
+	 * Сигнатура в 26.2: bobView(CameraRenderState, PoseStack) — поэтому
+	 * принимаем Object и не тянем класс рендер-стейта в импорты.
+	 */
+	@Inject(method = "bobView", at = @At("HEAD"), cancellable = true, require = 0)
+	private void dreamcast$noBob(Object cameraRenderState, com.mojang.blaze3d.vertex.PoseStack poseStack,
+			CallbackInfo ci) {
+		com.dreamcast.client.module.impl.NoHurtCamModule module =
+				ModuleManager.find(com.dreamcast.client.module.impl.NoHurtCamModule.class);
+		if (module != null && module.isEnabled() && module.noBob()) {
+			ci.cancel();
+		}
+	}
 }

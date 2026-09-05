@@ -161,7 +161,7 @@ public class ScaffoldModule extends Module {
 
 	public ScaffoldModule() {
 		super("scaffold", "Scaffold", "Мосты и башни: Normal, Legit и прыжковый Telly",
-				ModuleCategory.MOVEMENT, GLFW.GLFW_KEY_UNKNOWN);
+				ModuleCategory.WORLD, GLFW.GLFW_KEY_UNKNOWN);
 		// списки блоков не имеют своего хелпера — добавляем вручную,
 		// иначе они не появятся в ClickGUI и в конфиге
 		addSetting(whitelist);

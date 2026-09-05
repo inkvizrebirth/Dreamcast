@@ -47,7 +47,7 @@ public class AutoMineModule extends Module {
 
 	public AutoMineModule() {
 		super("auto_mine", "AutoMine", "Автоматическая добыча блоков через Baritone",
-				ModuleCategory.MISC, GLFW.GLFW_KEY_B);
+				ModuleCategory.WORLD, GLFW.GLFW_KEY_B);
 	}
 
 	@Override

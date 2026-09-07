@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.dreamcast.client.mixin",
+	"client": [
+		"DreamcastGuiMixin",
+		"ExternalButtonMixin",
+		"ExternalEditBoxMixin",
+		"ExternalSliderMixin",
+		"ExternalTabButtonMixin",
+		"ExternalWidgetMixin",
+		"ScreenBackgroundMixin"
+	],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

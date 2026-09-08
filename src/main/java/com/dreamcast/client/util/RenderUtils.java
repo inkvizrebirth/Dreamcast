@@ -470,6 +470,37 @@ public final class RenderUtils {
 		}
 	}
 
+	/** Панель с тонкой стеклянной кромкой и медленно проходящим бликом. */
+	public static void fillGlassPanel(GuiGraphicsExtractor graphics, int x, int y, int width, int height, int radius,
+			int borderColor, int fillTop, int fillBottom, long now) {
+		fillRoundedBorder(graphics, x, y, width, height, radius, borderColor, fillTop, fillBottom, 1);
+
+		int highlightHeight = Math.max(0, Math.min(2, height - 1));
+		int highlightColor = mix(0xFFFFFFFF, fillTop, 0.30f);
+		float panelAlpha = Math.max(ARGB.alpha(fillTop), ARGB.alpha(fillBottom)) / 255.0f;
+		fillRounded(graphics, x + 1, y + 1, width - 2, highlightHeight, Math.max(0, radius - 1),
+				withAlpha(highlightColor, 0.16f * panelAlpha), withAlpha(highlightColor, 0.04f * panelAlpha), true, true, false, false);
+
+		int sheenWidth = Math.max(0, Math.min(14, width / 8));
+		int sheenHeight = Math.max(0, height - 4);
+		int travel = Math.max(0, width - sheenWidth);
+		long cycleMillis = Math.floorMod(now, 6000L);
+		float progress = cycleMillis / 6000.0f;
+		int sheenX = x + Math.round(travel * progress);
+		int maxSheenX = x + travel;
+		int sheenColor = mix(0xFFFFFFFF, fillTop, 0.20f);
+		float timePhase = cycleMillis * (float) (Math.PI * 2.0 / 6000.0);
+		for (int offset = -1; offset <= 1; offset++) {
+			int bandX = Math.max(x, Math.min(maxSheenX, sheenX + offset * 6));
+			float position = (bandX - x) / (float) Math.max(1, width);
+			float pulse = 0.5f + 0.5f * (float) Math.sin(timePhase + position * 2.4f + offset * 0.23f);
+			float softness = 1.0f - Math.min(1.0f, Math.abs(offset) / 3.0f);
+			float alpha = (0.018f + 0.072f * softness * (0.55f + 0.45f * pulse)) * panelAlpha;
+			fillRounded(graphics, bandX, y + 2, sheenWidth, sheenHeight, Math.max(0, radius - 2),
+					withAlpha(sheenColor, alpha), withAlpha(sheenColor, alpha * 0.35f));
+		}
+	}
+
 	/** Залитый круг с мягким краем — используется для волны по клику и свечения. */
 	public static void fillCircle(GuiGraphicsExtractor graphics, float centerX, float centerY, float radius, int color) {
 		if (radius <= 0.5f) {

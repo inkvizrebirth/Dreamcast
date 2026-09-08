@@ -22,6 +22,8 @@ public enum AutomationNodeType {
 	FOOD_CHECK("Проверка голода", "Ветка по уровню сытости", 0xFFE4C75A),
 	HEALTH_CHECK("Проверка здоровья", "Ветка по здоровью игрока", 0xFFFF6F82),
 	ITEM_CHECK("Проверка предмета", "Есть ли предмет в инвентаре", 0xFF65D3C8),
+	CONTAINER_CHECK("Проверка контейнера", "Открыт ли контейнер: чужой или свой", 0xFFD98BFF),
+	PLAYER_COUNT_CHECK("Проверка игроков", "Ветка по числу игроков рядом", 0xFF66C7FF),
 	LOOK("Посмотреть", "Повернуть камеру к углам или точке", 0xFFA98CFF),
 	MOVE("Двигаться", "Удерживать направление заданное время", 0xFF6F9DFF),
 	JUMP("Прыгнуть", "Обычный прыжок игрока", 0xFF82D6FF),
@@ -49,6 +51,7 @@ public enum AutomationNodeType {
 	public int color() { return color; }
 	public boolean branching() {
 		return this == CONDITION || this == COORDINATE_CHECK || this == FOOD_CHECK
-				|| this == HEALTH_CHECK || this == ITEM_CHECK;
+				|| this == HEALTH_CHECK || this == ITEM_CHECK || this == CONTAINER_CHECK
+				|| this == PLAYER_COUNT_CHECK;
 	}
 }

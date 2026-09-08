@@ -56,6 +56,8 @@ public final class AutomationNode {
 			case FOOD_CHECK -> { values.put("operator", "<="); values.put("value", "14"); }
 			case HEALTH_CHECK -> { values.put("operator", "<="); values.put("value", "10"); }
 			case ITEM_CHECK -> { values.put("item", "minecraft:bread"); values.put("count", "1"); }
+			case CONTAINER_CHECK -> values.put("state", "open");
+			case PLAYER_COUNT_CHECK -> { values.put("radius", "16"); values.put("operator", ">="); values.put("value", "1"); }
 			case LOOK -> { values.put("mode", "angles"); values.put("yaw", "0"); values.put("pitch", "0"); values.put("x", "0"); values.put("y", "64"); values.put("z", "0"); }
 			case MOVE -> { values.put("direction", "forward"); values.put("seconds", "1"); }
 			case SNEAK -> values.put("seconds", "1");

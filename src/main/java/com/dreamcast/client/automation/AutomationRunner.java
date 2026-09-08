@@ -92,6 +92,8 @@ public final class AutomationRunner {
 				case OPEN -> runOpen();
 				case USE -> runUse();
 				case COORDINATE_CHECK -> next(testCoordinate() ? "true" : "false");
+				case CONTAINER_CHECK -> next(testContainer() ? "true" : "false");
+				case PLAYER_COUNT_CHECK -> next(testPlayerCount() ? "true" : "false");
 				case CHAT -> {
 					Minecraft client = Minecraft.getInstance();
 					if (client.getConnection() == null) fail("Нет подключения к миру");
@@ -280,6 +282,25 @@ public final class AutomationRunner {
 		return compare(client.player.getHealth(), current.value("operator"), number(resolve(current.value("value"))));
 	}
 
+	private static boolean testContainer() {
+		Minecraft client = Minecraft.getInstance();
+		requirePlayer(client);
+		boolean open = client.player.containerMenu != client.player.inventoryMenu;
+		boolean expected = "open".equalsIgnoreCase(current.value("state"));
+		return open == expected;
+	}
+
+	private static boolean testPlayerCount() {
+		Minecraft client = Minecraft.getInstance();
+		requirePlayer(client);
+		if (client.level == null) return false;
+		double radius = number(resolve(current.value("radius")));
+		long count = client.level.players().stream()
+				.filter(player -> player != client.player && player.distanceTo(client.player) <= radius)
+				.count();
+		return compare(count, current.value("operator"), number(resolve(current.value("value"))));
+	}
+
 	private static boolean testCondition() {
 		String left = resolve(current.value("left"));
 		String right = resolve(current.value("right"));
@@ -315,6 +336,16 @@ public final class AutomationRunner {
 					.replace("${world.time}", Long.toString(client.level == null ? 0 : client.level.getGameTime()));
 			Map<String,Integer> counts=new HashMap<>();for(ItemStack stack:client.player.getInventory().getNonEquipmentItems()){String id=BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();counts.merge(id,stack.getCount(),Integer::sum);}
 			for(Map.Entry<String,Integer> entry:counts.entrySet())result=result.replace("${inventory."+entry.getKey()+"}",Integer.toString(entry.getValue()));
+			if (client.level != null && result.contains("${nearest_player.")) {
+				var nearest = client.level.players().stream()
+						.filter(player -> player != client.player)
+						.min(java.util.Comparator.comparingDouble(player -> player.distanceTo(client.player)))
+						.orElse(null);
+				String nearestName = nearest == null ? "" : nearest.getGameProfile().name();
+				String nearestDistance = nearest == null ? "99999" : format(nearest.distanceTo(client.player));
+				result = result.replace("${nearest_player.name}", nearestName)
+						.replace("${nearest_player.distance}", nearestDistance);
+			}
 		}
 		for (Map.Entry<String, String> entry : VARIABLES.entrySet()) {
 			result = result.replace("${" + entry.getKey() + "}", entry.getValue());

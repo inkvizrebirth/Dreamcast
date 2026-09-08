@@ -39,6 +39,8 @@ public final class RegionManager {
 	public final List<VariableMarker> variableMarkers = new CopyOnWriteArrayList<>();
 	/** Whether the detached top-down camera is active. */
 	public volatile boolean freeCamActive;
+	/** Whether the region remains visible after leaving free-camera mode. */
+	public volatile boolean showRegion;
 	/** Current free-camera Y coordinate. */
 	public volatile float freeCamHeight;
 	/** Whether the next primary click adds a polygon corner. */

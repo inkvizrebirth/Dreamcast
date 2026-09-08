@@ -32,8 +32,10 @@ public final class ClickGuiScreen extends Screen {
 	private Box contextMenuBox;
 	private String linkOutput, focusedField, message="";
 	private String paletteQuery="";
+	private String addMenuQuery="";
+	private boolean addMenuOpen, addConfigChoiceOpen;
 	private float dragDx, dragDy;
-	private float paletteScroll,paletteTarget;
+	private float paletteScroll,paletteTarget,addMenuScroll,addMenuTarget;
 	private float inspectorScroll,inspectorTarget;
 	private long messageAt;
 	private final Map<String,Float> animations=new HashMap<>();
@@ -51,7 +53,7 @@ public final class ClickGuiScreen extends Screen {
 		else{g.fill(0,0,width,height,0xD906070B);try{g.blurBeforeThisStratum();}catch(IllegalStateException ignored){}}
 	}
 	@Override public void extractRenderState(GuiGraphicsExtractor g,int mx,int my,float delta){
-		super.extractRenderState(g,mx,my,delta);paletteScroll+=(paletteTarget-paletteScroll)*.22F;inspectorScroll+=(inspectorTarget-inspectorScroll)*.22F;float appear=Math.min(1F,(Util.getMillis()-openedAt)/260F);g.pose().pushMatrix();g.pose().translate(0,(1-smooth(appear))*7);
+		super.extractRenderState(g,mx,my,delta);paletteScroll+=(paletteTarget-paletteScroll)*.22F;addMenuScroll+=(addMenuTarget-addMenuScroll)*.22F;inspectorScroll+=(inspectorTarget-inspectorScroll)*.22F;float appear=Math.min(1F,(Util.getMillis()-openedAt)/260F);g.pose().pushMatrix();g.pose().translate(0,(1-smooth(appear))*7);
 		if(editing==null)drawLibrary(g,mx,my);else drawEditor(g,mx,my);
 		if(!message.isEmpty()&&Util.getMillis()-messageAt<2600)drawToast(g);
 		g.pose().popMatrix();
@@ -81,15 +83,32 @@ public final class ClickGuiScreen extends Screen {
 		}
 		if(contextMenuFor!=null&&contextMenuBox!=null){Box menu=contextMenuBox;RenderUtils.fillGlassPanel(g,menu.x,menu.y,menu.w,menu.h,8,BORDER,PANEL,PANEL,Util.getMillis());RenderUtils.textFlat(g,font,"Легитная ротация",menu.x+10,menu.y+12,TEXT);RenderUtils.drawToggle(g,menu.x+164,menu.y+10,26,16,contextMenuFor.legit?1F:0F,0xFF66D9A3);}
 		RenderUtils.textFlat(g,font,AutomationRunner.status(),20,height-18,AutomationRunner.isRunning()?0xFF66D9A3:MUTED);
+		if(addConfigChoiceOpen)drawConfigChoice(g,mx,my);
 	}
 
 	private void drawEditor(GuiGraphicsExtractor g,int mx,int my){
-		top(g,"Конструктор автоматизации");Box back=new Box(14,12,58,24),save=new Box(width-214,12,76,24),run=new Box(width-130,12,72,24),stop=new Box(width-52,12,38,24);
-		button(g,back,"Назад",back.has(mx,my),MUTED,false);button(g,save,"Сохранить",save.has(mx,my),ACCENT,false);
+		top(g,"Конструктор автоматизации");Box back=new Box(14,12,58,24),add=new Box(width-300,12,78,24),save=new Box(width-214,12,76,24),run=new Box(width-130,12,72,24),stop=new Box(width-52,12,38,24);
+		button(g,back,"Назад",back.has(mx,my),MUTED,false);button(g,add,"Добавить",add.has(mx,my),ACCENT,true);button(g,save,"Сохранить",save.has(mx,my),ACCENT,false);
 		button(g,run,"Запуск",run.has(mx,my),0xFF66D9A3,true);button(g,stop,"■",stop.has(mx,my),0xFFFF6B78,false);
 		Box name=nameBox();field(g,name,editing.name,"name", "name".equals(focusedField),mx,my);
 		Box legit=legitBox();button(g,legit,editing.legit?"✓  Легит":"Легит",legit.has(mx,my),0xFF66D9A3,editing.legit);
-		drawCanvas(g,mx,my);drawPalette(g,mx,my);drawInspector(g,mx,my);
+		drawCanvas(g,mx,my);drawPalette(g,mx,my);drawInspector(g,mx,my);if(addMenuOpen)drawAddMenu(g,mx,my);
+	}
+	private void drawConfigChoice(GuiGraphicsExtractor g,int mx,int my){
+		Box menu=configChoiceBox();RenderUtils.fillGlassPanel(g,menu.x,menu.y,menu.w,menu.h,8,BORDER,PANEL,PANEL,Util.getMillis());
+		Box record=new Box(menu.x+8,menu.y+8,menu.w-16,22),builder=new Box(menu.x+8,menu.y+34,menu.w-16,22);
+		button(g,record,"Записать действия",record.has(mx,my),MUTED,false);button(g,builder,"Конструктор",builder.has(mx,my),ACCENT,true);
+	}
+	private void drawAddMenu(GuiGraphicsExtractor g,int mx,int my){
+		Box menu=addMenuBox();RenderUtils.fillGlassPanel(g,menu.x,menu.y,menu.w,menu.h,8,BORDER,PANEL,PANEL,Util.getMillis());
+		field(g,new Box(menu.x+10,menu.y+10,menu.w-20,24),addMenuQuery,"add-menu-search","add-menu-search".equals(focusedField),mx,my);
+		int listTop=menu.y+44;g.enableScissor(menu.x+1,listTop,menu.x+menu.w-1,menu.y+menu.h-8);int y=listTop+4-Math.round(addMenuScroll);
+		for(AutomationNodeType.Category category:AutomationNodeType.Category.values()){
+			List<AutomationNodeType> types=addMenuTypes(category);if(types.isEmpty())continue;
+			RenderUtils.textFlat(g,font,category.label(),menu.x+12,y,MUTED);y+=20;
+			for(AutomationNodeType t:types){Box row=new Box(menu.x+8,y,menu.w-16,38);float h=anim("add-menu:"+t.name(),row.has(mx,my)&&my>=listTop);RenderUtils.fillRounded(g,row.x,row.y,row.w,row.h,8,RenderUtils.mix(0x00000000,0x22FFFFFF,h));RenderUtils.fillCircle(g,menu.x+21,y+19,5+h,t.color());RenderUtils.textFlat(g,font,t.title(),menu.x+34,y+8,TEXT);RenderUtils.textFlat(g,font,trim(t.description(),menu.w-52),menu.x+34,y+22,MUTED);y+=43;}
+		}
+		g.disableScissor();
 	}
 	private void drawCanvas(GuiGraphicsExtractor g,int mx,int my){
 		int right=width-RIGHT;g.enableScissor(LEFT,TOP,right,height);g.fill(LEFT,TOP,right,height,0xD9090B10);
@@ -128,15 +147,17 @@ public final class ClickGuiScreen extends Screen {
 	@Override public boolean mouseClicked(MouseButtonEvent e,boolean dbl){double mx=e.x(),my=e.y();RenderUtils.addClickWave(mx,my);return editing==null?clickLibrary(mx,my,e.button()):clickEditor(mx,my,e.button());}
 	private boolean clickLibrary(double mx,double my,int button){
 		if(contextMenuFor!=null&&contextMenuBox!=null){Box menu=contextMenuBox;Box toggle=new Box(menu.x+156,menu.y+5,36,26);if(toggle.has(mx,my)){contextMenuFor.legit=!contextMenuFor.legit;AutomationManager.save();contextMenuFor=null;return true;}if(!menu.has(mx,my)){contextMenuFor=null;contextMenuBox=null;}}
+		if(addConfigChoiceOpen){Box menu=configChoiceBox();if(!menu.has(mx,my)){addConfigChoiceOpen=false;return true;}if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT){if(new Box(menu.x+8,menu.y+8,menu.w-16,22).has(mx,my)){toast("Запись действий скоро появится");addConfigChoiceOpen=false;return true;}if(new Box(menu.x+8,menu.y+34,menu.w-16,22).has(mx,my)){editing=AutomationManager.create();addConfigChoiceOpen=false;return true;}}return true;}
 		if(button==GLFW.GLFW_MOUSE_BUTTON_RIGHT){int rx=20,ry=68,cwRight=Math.max(260,Math.min(370,(width-60)/2));for(AutomationConfig c:AutomationManager.all()){if(rx+cwRight>width-20){rx=20;ry+=118;}if(new Box(rx,ry,cwRight,104).has(mx,my)){contextMenuFor=c;return true;}rx+=cwRight+14;}return true;}
-		if(button!=GLFW.GLFW_MOUSE_BUTTON_LEFT)return true;if(new Box(20,12,142,25).has(mx,my)){editing=AutomationManager.create();return true;}
+		if(button!=GLFW.GLFW_MOUSE_BUTTON_LEFT)return true;if(new Box(20,12,142,25).has(mx,my)){addConfigChoiceOpen=true;return true;}
 		int x=20,y=68,cw=Math.max(260,Math.min(370,(width-60)/2));for(AutomationConfig c:new ArrayList<>(AutomationManager.all())){if(x+cw>width-20){x=20;y+=118;}
 			if(new Box(x+18,y+70,72,22).has(mx,my)){if(AutomationRunner.isRunning(c))AutomationRunner.stop("Остановлено пользователем");else AutomationRunner.start(c);return true;}
 			if(new Box(x+98,y+70,92,22).has(mx,my)){editing=c;return true;}if(new Box(x+cw-72,y+70,54,22).has(mx,my)){AutomationManager.remove(c);return true;}x+=cw+14;}return true;
 	}
 	private boolean clickEditor(double mx,double my,int button){
+		if(addMenuOpen){Box menu=addMenuBox();if(!menu.has(mx,my)){addMenuOpen=false;focusedField=null;return true;}if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT){Box search=new Box(menu.x+10,menu.y+10,menu.w-20,24);if(search.has(mx,my)){focusedField="add-menu-search";return true;}int listTop=menu.y+44,y=listTop+4-Math.round(addMenuScroll);for(AutomationNodeType.Category category:AutomationNodeType.Category.values()){List<AutomationNodeType> types=addMenuTypes(category);if(types.isEmpty())continue;y+=20;for(AutomationNodeType t:types){if(new Box(menu.x+8,y,menu.w-16,38).has(mx,my)&&my>=listTop&&my<menu.y+menu.h-8){addNode(t);return true;}y+=43;}}}return true;}
 		if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT){
-			if(new Box(14,12,58,24).has(mx,my)){save();editing=null;selected=null;return true;}if(new Box(width-214,12,76,24).has(mx,my)){save();toast("Конфиг сохранён");return true;}
+			if(new Box(14,12,58,24).has(mx,my)){save();editing=null;selected=null;return true;}if(new Box(width-300,12,78,24).has(mx,my)){addMenuOpen=true;addMenuScroll=addMenuTarget=0;focusedField=null;return true;}if(new Box(width-214,12,76,24).has(mx,my)){save();toast("Конфиг сохранён");return true;}
 			if(new Box(width-130,12,72,24).has(mx,my)){save();AutomationRunner.start(editing);toast("Сценарий запущен");return true;}if(new Box(width-52,12,38,24).has(mx,my)){AutomationRunner.stop("Остановлено пользователем");return true;}
 			if(nameBox().has(mx,my)){focusedField="name";return true;}if(new Box(10,TOP+42,LEFT-20,24).has(mx,my)){focusedField="palette-search";return true;}}
 		if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT&&legitBox().has(mx,my)){editing.legit=!editing.legit;return true;}
@@ -152,10 +173,10 @@ public final class ClickGuiScreen extends Screen {
 	}
 	@Override public boolean mouseDragged(MouseButtonEvent e,double dx,double dy){if(dragging!=null){float maxX=width-LEFT-RIGHT-NW-8,maxY=height-TOP-NH-8;float clampedX=clamp((float)e.x()-dragDx,8,maxX),clampedY=clamp((float)e.y()-dragDy,8,maxY);dragging.x=clamp(Math.round(clampedX/8F)*8F,8,maxX);dragging.y=clamp(Math.round(clampedY/8F)*8F,8,maxY);return true;}return super.mouseDragged(e,dx,dy);}
 	@Override public boolean mouseReleased(MouseButtonEvent e){if(dragging!=null){dragging=null;return true;}return super.mouseReleased(e);}
-	@Override public boolean mouseScrolled(double mx,double my,double sx,double sy){if(editing!=null&&mx<LEFT){int count=paletteTypes().size(),max=Math.max(0,count*43-(height-TOP-78));paletteTarget=clamp(paletteTarget-(float)sy*48,0,max);return true;}if(editing!=null&&mx>width-RIGHT&&selected!=null){int max=Math.max(0,selected.values.size()*49-(height-TOP-128));inspectorTarget=clamp(inspectorTarget-(float)sy*48,0,max);return true;}return super.mouseScrolled(mx,my,sx,sy);}
+	@Override public boolean mouseScrolled(double mx,double my,double sx,double sy){if(editing!=null&&addMenuOpen&&addMenuBox().has(mx,my)){int max=Math.max(0,addMenuContentHeight()-(addMenuBox().h-52));addMenuTarget=clamp(addMenuTarget-(float)sy*48,0,max);return true;}if(editing!=null&&mx<LEFT){int count=paletteTypes().size(),max=Math.max(0,count*43-(height-TOP-78));paletteTarget=clamp(paletteTarget-(float)sy*48,0,max);return true;}if(editing!=null&&mx>width-RIGHT&&selected!=null){int max=Math.max(0,selected.values.size()*49-(height-TOP-128));inspectorTarget=clamp(inspectorTarget-(float)sy*48,0,max);return true;}return super.mouseScrolled(mx,my,sx,sy);}
 	@Override public boolean charTyped(CharacterEvent e){if(focusedField==null||!e.isAllowedChatCharacter())return super.charTyped(e);String s=e.codepointAsString();
-		if("name".equals(focusedField)&&editing.name.length()<48)editing.name+=s;else if("palette-search".equals(focusedField)&&paletteQuery.length()<48)paletteQuery+=s;else if(focusedField.startsWith("value:")&&selected!=null){String k=focusedField.substring(6),v=selected.value(k);if(v.length()<120)selected.values.put(k,v+s);}return true;}
-	@Override public boolean keyPressed(KeyEvent e){if(focusedField!=null){if(e.key()==GLFW.GLFW_KEY_BACKSPACE){if("name".equals(focusedField))editing.name=cut(editing.name);else if("palette-search".equals(focusedField))paletteQuery=cut(paletteQuery);else if(focusedField.startsWith("value:")&&selected!=null){String k=focusedField.substring(6);selected.values.put(k,cut(selected.value(k)));}return true;}
+		if("name".equals(focusedField)&&editing.name.length()<48)editing.name+=s;else if("palette-search".equals(focusedField)&&paletteQuery.length()<48)paletteQuery+=s;else if("add-menu-search".equals(focusedField)&&addMenuQuery.length()<48)addMenuQuery+=s;else if(focusedField.startsWith("value:")&&selected!=null){String k=focusedField.substring(6),v=selected.value(k);if(v.length()<120)selected.values.put(k,v+s);}return true;}
+	@Override public boolean keyPressed(KeyEvent e){if(e.key()==GLFW.GLFW_KEY_ESCAPE&&addMenuOpen){addMenuOpen=false;focusedField=null;return true;}if(focusedField!=null){if(e.key()==GLFW.GLFW_KEY_BACKSPACE){if("name".equals(focusedField))editing.name=cut(editing.name);else if("palette-search".equals(focusedField))paletteQuery=cut(paletteQuery);else if("add-menu-search".equals(focusedField))addMenuQuery=cut(addMenuQuery);else if(focusedField.startsWith("value:")&&selected!=null){String k=focusedField.substring(6);selected.values.put(k,cut(selected.value(k)));}return true;}
 			if(e.key()==GLFW.GLFW_KEY_ENTER||e.key()==GLFW.GLFW_KEY_KP_ENTER||e.key()==GLFW.GLFW_KEY_ESCAPE){focusedField=null;return true;}return true;}
 		if((e.key()==GLFW.GLFW_KEY_DELETE||e.key()==GLFW.GLFW_KEY_BACKSPACE)&&selected!=null&&selected.type!=AutomationNodeType.START){removeSelected();return true;}
 		if(e.key()==GLFW.GLFW_KEY_ESCAPE&&editing!=null){save();editing=null;selected=null;return true;}return super.keyPressed(e);}
@@ -167,6 +188,11 @@ public final class ClickGuiScreen extends Screen {
 	private Box nameBox(){return new Box(82,12,Math.max(120,Math.min(260,width-430)),24);}
 	private Box legitBox(){Box n=nameBox();return new Box(n.x+n.w+8,12,72,24);}
 	private List<AutomationNodeType> paletteTypes(){String query=paletteQuery.toLowerCase(Locale.ROOT);List<AutomationNodeType> types=new ArrayList<>();for(AutomationNodeType t:AutomationNodeType.values()){if(t!=AutomationNodeType.START&&(query.isEmpty()||t.title().toLowerCase(Locale.ROOT).contains(query)||t.description().toLowerCase(Locale.ROOT).contains(query)))types.add(t);}return types;}
+	private Box configChoiceBox(){return new Box(20,42,190,64);}
+	private Box addMenuBox(){return new Box(Math.max(0,Math.min(width-260,width-300)),Math.max(0,Math.min(40,height-320)),260,320);}
+	private List<AutomationNodeType> addMenuTypes(AutomationNodeType.Category category){String query=addMenuQuery.toLowerCase(Locale.ROOT);List<AutomationNodeType> types=new ArrayList<>();for(AutomationNodeType t:AutomationNodeType.values())if(t.category()==category&&(query.isEmpty()||t.title().toLowerCase(Locale.ROOT).contains(query)||t.description().toLowerCase(Locale.ROOT).contains(query)))types.add(t);return types;}
+	private int addMenuContentHeight(){int height=0;for(AutomationNodeType.Category category:AutomationNodeType.Category.values()){List<AutomationNodeType> types=addMenuTypes(category);if(!types.isEmpty())height+=20+types.size()*43;}return height;}
+	private void addNode(AutomationNodeType type){AutomationNode n=new AutomationNode(type,Math.max(24,width/2F-LEFT),80+editing.nodes.size()*18F);editing.nodes.add(n);selected=n;inspectorScroll=inspectorTarget=0;addMenuOpen=false;addMenuQuery="";focusedField=null;}
 	private Box nodeBox(AutomationNode n){return new Box(LEFT+Math.round(n.x),TOP+Math.round(n.y),NW,NH);}
 	private int outputY(AutomationNode n,String out){Box b=nodeBox(n);return branch(n)?b.y+("false".equals(out)?57:39):b.y+48;}
 	private String hitOutput(AutomationNode n,double mx,double my){if(n.type==AutomationNodeType.STOP)return null;Box b=nodeBox(n);if(Math.abs(mx-(b.x+b.w))>9)return null;if(branch(n)){if(Math.abs(my-(b.y+39))<=9)return "true";if(Math.abs(my-(b.y+57))<=9)return "false";}else if(Math.abs(my-(b.y+48))<=9)return "next";return null;}

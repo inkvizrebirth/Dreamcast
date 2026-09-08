@@ -36,6 +36,14 @@ public enum AutomationNodeType {
 	CONDITION("Условие", "Ветка Да / Нет", 0xFFFFD166),
 	STOP("Стоп", "Завершить сценарий", 0xFFFF6B78);
 
+	public enum Category {
+		NAVIGATION("Движение"), INVENTORY("Инвентарь"), CHECKS("Условия"),
+		CONTROL("Управление"), MISC("Прочее");
+		private final String label;
+		Category(String label) { this.label = label; }
+		public String label() { return label; }
+	}
+
 	private final String title;
 	private final String description;
 	private final int color;
@@ -49,6 +57,15 @@ public enum AutomationNodeType {
 	public String title() { return title; }
 	public String description() { return description; }
 	public int color() { return color; }
+	public Category category() {
+		return switch (this) {
+			case GOTO, MINE, SEARCH, OPEN, FOLLOW, EXPLORE, FARM, COMMAND -> Category.NAVIGATION;
+			case SELECT_SLOT, USE, MOVE_ITEM, QUICK_MOVE, DROP_ITEM, TAKE_CONTAINER, EAT -> Category.INVENTORY;
+			case CONDITION, COORDINATE_CHECK, FOOD_CHECK, HEALTH_CHECK, ITEM_CHECK, CONTAINER_CHECK, PLAYER_COUNT_CHECK -> Category.CHECKS;
+			case LOOK, MOVE, JUMP, SNEAK, ATTACK, INTERACT -> Category.CONTROL;
+			case CHAT, WAIT, SET_VARIABLE, START, STOP -> Category.MISC;
+		};
+	}
 	public boolean branching() {
 		return this == CONDITION || this == COORDINATE_CHECK || this == FOOD_CHECK
 				|| this == HEALTH_CHECK || this == ITEM_CHECK || this == CONTAINER_CHECK

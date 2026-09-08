@@ -74,6 +74,8 @@ public final class AutomationNode {
 				values.put("operator", "==");
 				values.put("right", "0");
 			}
+			case SET_FLAG -> values.put("flag", "мой_флаг");
+			case WAIT_FLAG -> values.put("flag", "мой_флаг");
 			default -> { }
 		}
 	}

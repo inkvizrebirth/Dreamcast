@@ -34,6 +34,9 @@ public enum AutomationNodeType {
 	COMMAND("Команда", "Любая команда Baritone", 0xFF55D6E8),
 	SET_VARIABLE("Переменная", "Записать значение", 0xFFFF7CAC),
 	CONDITION("Условие", "Ветка Да / Нет", 0xFFFFD166),
+	PARALLEL("Параллельный поток", "Запустить независимую ветку рядом с текущей", 0xFF9B8CFF),
+	SET_FLAG("Установить флаг", "Поднять именованный флаг для других веток", 0xFF5EE0C0),
+	WAIT_FLAG("Ожидание флага", "Ждать, пока другая ветка не поднимет флаг", 0xFF5EBFE0),
 	STOP("Стоп", "Завершить сценарий", 0xFFFF6B78);
 
 	public enum Category {
@@ -63,12 +66,12 @@ public enum AutomationNodeType {
 			case SELECT_SLOT, USE, MOVE_ITEM, QUICK_MOVE, DROP_ITEM, TAKE_CONTAINER, EAT -> Category.INVENTORY;
 			case CONDITION, COORDINATE_CHECK, FOOD_CHECK, HEALTH_CHECK, ITEM_CHECK, CONTAINER_CHECK, PLAYER_COUNT_CHECK -> Category.CHECKS;
 			case LOOK, MOVE, JUMP, SNEAK, ATTACK, INTERACT -> Category.CONTROL;
-			case CHAT, WAIT, SET_VARIABLE, START, STOP -> Category.MISC;
+			case CHAT, WAIT, SET_VARIABLE, START, STOP, PARALLEL, SET_FLAG, WAIT_FLAG -> Category.MISC;
 		};
 	}
 	public boolean branching() {
 		return this == CONDITION || this == COORDINATE_CHECK || this == FOOD_CHECK
 				|| this == HEALTH_CHECK || this == ITEM_CHECK || this == CONTAINER_CHECK
-				|| this == PLAYER_COUNT_CHECK;
+				|| this == PLAYER_COUNT_CHECK || this == PARALLEL;
 	}
 }

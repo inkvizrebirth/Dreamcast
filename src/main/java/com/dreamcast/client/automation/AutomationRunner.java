@@ -19,15 +19,43 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /** Tick-driven workflow interpreter. It never blocks Minecraft's render thread. */
 public final class AutomationRunner {
+
+	/**
+	 * One independent point of execution inside the running config. Most scripts
+	 * have exactly one (spawned by {@link #start}); a PARALLEL node spawns another.
+	 * The per-node-execution fields below (current/enteredAt/dispatched/heldKey/
+	 * progress/previousSlot) are only ever "live" for whichever cursor is being
+	 * ticked right now — {@link #tick()} swaps a cursor's saved state into them
+	 * before running its node logic and saves it back after, so none of the
+	 * existing per-node handlers below need to know cursors exist at all.
+	 */
+	private static final class Cursor {
+		AutomationNode current;
+		long enteredAt;
+		boolean dispatched;
+		KeyMapping heldKey;
+		int progress;
+		int previousSlot = -1;
+		Cursor(AutomationNode current, long enteredAt) { this.current = current; this.enteredAt = enteredAt; }
+	}
+
 	private static AutomationConfig active;
-	private static AutomationNode current;
+	private static final List<Cursor> CURSORS = new ArrayList<>();
+	private static Cursor currentCursor;
 	private static final Map<String, String> VARIABLES = new HashMap<>();
+	private static final Set<String> FLAGS = new HashSet<>();
+	// Scratch copy of whichever Cursor is currently ticking — see the Cursor javadoc above.
+	private static AutomationNode current;
 	private static long enteredAt;
 	private static boolean dispatched;
 	private static KeyMapping heldKey;
@@ -43,10 +71,11 @@ public final class AutomationRunner {
 		active = config;
 		BaritoneBridge.configureLegit(config.legit);
 		VARIABLES.clear();
-		current = config.nodes.stream().filter(node -> node.type == AutomationNodeType.START).findFirst()
+		FLAGS.clear();
+		AutomationNode startNode = config.nodes.stream().filter(node -> node.type == AutomationNodeType.START).findFirst()
 				.orElse(config.nodes.get(0));
-		enteredAt = System.currentTimeMillis();
-		dispatched = false;
+		CURSORS.clear();
+		CURSORS.add(new Cursor(startNode, System.currentTimeMillis()));
 		status = "Запущен: " + config.name;
 		notify(status);
 	}
@@ -54,6 +83,7 @@ public final class AutomationRunner {
 	public static void stop(String reason) {
 		if (active != null) BaritoneBridge.stop();
 		cleanupAction();
+		CURSORS.clear();
 		active = null;
 		current = null;
 		dispatched = false;
@@ -64,69 +94,112 @@ public final class AutomationRunner {
 	public static boolean isRunning() { return active != null; }
 	public static boolean isRunning(AutomationConfig config) { return active == config; }
 	public static String status() { return status; }
-	public static String currentNodeId() { return current == null ? null : current.id; }
+
+	/** Ids of every node a cursor is currently sitting on — used to highlight active nodes in the editor. */
+	public static Set<String> currentNodeIds() {
+		Set<String> ids = new HashSet<>();
+		for (Cursor cursor : CURSORS) if (cursor.current != null) ids.add(cursor.current.id);
+		return ids;
+	}
 
 	public static void tick() {
+		if (active == null || CURSORS.isEmpty()) return;
+		for (Cursor cursor : new ArrayList<>(CURSORS)) {
+			if (active == null || !CURSORS.contains(cursor)) continue;
+			currentCursor = cursor;
+			current = cursor.current; enteredAt = cursor.enteredAt; dispatched = cursor.dispatched;
+			heldKey = cursor.heldKey; progress = cursor.progress; previousSlot = cursor.previousSlot;
+			try {
+				runCursor();
+			} catch (RuntimeException error) {
+				DreamcastClient.LOGGER.error("Ошибка сценария {}", active.name, error);
+				fail("Ошибка в узле «" + current.type.title() + "»");
+				return;
+			}
+			if (active != null && CURSORS.contains(cursor)) {
+				cursor.current = current; cursor.enteredAt = enteredAt; cursor.dispatched = dispatched;
+				cursor.heldKey = heldKey; cursor.progress = progress; cursor.previousSlot = previousSlot;
+			}
+		}
+	}
+
+	private static void runCursor() {
 		if (active == null || current == null) return;
-		try {
-			switch (current.type) {
-				case START -> next("next");
-				case STOP -> finish("Сценарий завершён");
-				case SET_VARIABLE -> {
-					String name = current.value("name").trim();
-					if (!name.isEmpty()) VARIABLES.put(name, resolve(current.value("value")));
-					next("next");
-				}
-				case CONDITION -> next(testCondition() ? "true" : "false");
-				case WAIT -> {
-					long duration = Math.max(0L, Math.round(number(resolve(current.value("seconds"))) * 1000.0));
-					status = "Ожидание " + current.value("seconds") + " сек.";
-					if (System.currentTimeMillis() - enteredAt >= duration) next("next");
-				}
-				case GOTO -> runGoto();
-				case MINE -> runMine();
-				case SEARCH -> runCommandAndWait("goto " + resolve(current.value("block")), "Ищу " + current.value("block"));
-				case FOLLOW -> runCommandAndWait("follow " + resolve(current.value("entity")) + " " + resolve(current.value("name")), "Следую за целью");
-				case EXPLORE -> runCommandAndWait("explore " + resolve(current.value("radius")), "Исследую область");
-				case FARM -> runCommandAndWait("farm " + resolve(current.value("radius")), "Собираю урожай");
-				case OPEN -> runOpen();
-				case USE -> runUse();
-				case COORDINATE_CHECK -> next(testCoordinate() ? "true" : "false");
-				case CONTAINER_CHECK -> next(testContainer() ? "true" : "false");
-				case PLAYER_COUNT_CHECK -> next(testPlayerCount() ? "true" : "false");
-				case CHAT -> {
-					Minecraft client = Minecraft.getInstance();
-					if (client.getConnection() == null) fail("Нет подключения к миру");
-					else { client.getConnection().sendChat(resolve(current.value("message"))); next("next"); }
-				}
-				case SELECT_SLOT -> { selectSlot(); next("next"); }
-				case MOVE_ITEM -> moveItem();
-				case QUICK_MOVE -> { containerClick("quick"); next("next"); }
-				case DROP_ITEM -> { containerClick("drop"); next("next"); }
-				case TAKE_CONTAINER -> takeContainer();
-				case EAT -> eat();
-				case FOOD_CHECK -> next(testFood() ? "true" : "false");
-				case HEALTH_CHECK -> next(testHealth() ? "true" : "false");
-				case ITEM_CHECK -> next(hasItem() ? "true" : "false");
-				case LOOK -> look();
-				case MOVE -> holdMovement(false);
-				case SNEAK -> holdMovement(true);
-				case JUMP -> { Minecraft.getInstance().player.jumpFromGround(); next("next"); }
-				case ATTACK -> attack();
-				case INTERACT -> interact();
-				case COMMAND -> {
-					if (!dispatched) {
-						dispatched = true;
-						String command = resolve(current.value("command"));
-						if (!BaritoneBridge.command(command)) fail("Команда не отправлена");
-						else next("next");
-					}
+		switch (current.type) {
+			case START -> next("next");
+			case STOP -> finish("Сценарий завершён");
+			case PARALLEL -> runParallel();
+			case SET_FLAG -> { FLAGS.add(resolve(current.value("flag"))); next("next"); }
+			case WAIT_FLAG -> {
+				String flag = resolve(current.value("flag"));
+				status = "Жду флаг: " + flag;
+				if (FLAGS.contains(flag)) next("next");
+			}
+			case SET_VARIABLE -> {
+				String name = current.value("name").trim();
+				if (!name.isEmpty()) VARIABLES.put(name, resolve(current.value("value")));
+				next("next");
+			}
+			case CONDITION -> next(testCondition() ? "true" : "false");
+			case WAIT -> {
+				long duration = Math.max(0L, Math.round(number(resolve(current.value("seconds"))) * 1000.0));
+				status = "Ожидание " + current.value("seconds") + " сек.";
+				if (System.currentTimeMillis() - enteredAt >= duration) next("next");
+			}
+			case GOTO -> runGoto();
+			case MINE -> runMine();
+			case SEARCH -> runCommandAndWait("goto " + resolve(current.value("block")), "Ищу " + current.value("block"));
+			case FOLLOW -> runCommandAndWait("follow " + resolve(current.value("entity")) + " " + resolve(current.value("name")), "Следую за целью");
+			case EXPLORE -> runCommandAndWait("explore " + resolve(current.value("radius")), "Исследую область");
+			case FARM -> runCommandAndWait("farm " + resolve(current.value("radius")), "Собираю урожай");
+			case OPEN -> runOpen();
+			case USE -> runUse();
+			case COORDINATE_CHECK -> next(testCoordinate() ? "true" : "false");
+			case CONTAINER_CHECK -> next(testContainer() ? "true" : "false");
+			case PLAYER_COUNT_CHECK -> next(testPlayerCount() ? "true" : "false");
+			case CHAT -> {
+				Minecraft client = Minecraft.getInstance();
+				if (client.getConnection() == null) fail("Нет подключения к миру");
+				else { client.getConnection().sendChat(resolve(current.value("message"))); next("next"); }
+			}
+			case SELECT_SLOT -> { selectSlot(); next("next"); }
+			case MOVE_ITEM -> moveItem();
+			case QUICK_MOVE -> { containerClick("quick"); next("next"); }
+			case DROP_ITEM -> { containerClick("drop"); next("next"); }
+			case TAKE_CONTAINER -> takeContainer();
+			case EAT -> eat();
+			case FOOD_CHECK -> next(testFood() ? "true" : "false");
+			case HEALTH_CHECK -> next(testHealth() ? "true" : "false");
+			case ITEM_CHECK -> next(hasItem() ? "true" : "false");
+			case LOOK -> look();
+			case MOVE -> holdMovement(false);
+			case SNEAK -> holdMovement(true);
+			case JUMP -> { Minecraft.getInstance().player.jumpFromGround(); next("next"); }
+			case ATTACK -> attack();
+			case INTERACT -> interact();
+			case COMMAND -> {
+				if (!dispatched) {
+					dispatched = true;
+					String command = resolve(current.value("command"));
+					if (!BaritoneBridge.command(command)) fail("Команда не отправлена");
+					else next("next");
 				}
 			}
-		} catch (RuntimeException error) {
-			DreamcastClient.LOGGER.error("Ошибка сценария {}", active.name, error);
-			fail("Ошибка в узле «" + current.type.title() + "»");
 		}
+	}
+
+	/**
+	 * PARALLEL keeps the existing branching wiring (true/false outputs, same
+	 * ports/links/curve colors as a Condition) but repurposes it: "true" spawns
+	 * an independent cursor at whatever it's linked to, "false" is where the
+	 * original cursor continues. The link is resolved from the PARALLEL node
+	 * itself, captured before {@code next("false")} moves {@code current} on.
+	 */
+	private static void runParallel() {
+		AutomationNode source = current;
+		AutomationNode branchTarget = linkTarget(source, "true");
+		if (branchTarget != null) CURSORS.add(new Cursor(branchTarget, System.currentTimeMillis()));
+		next("false");
 	}
 
 	private static void selectSlot() {
@@ -193,7 +266,22 @@ public final class AutomationRunner {
 	private static boolean compare(double left,String op,double right){return switch(op){case">"->left>right;case">="->left>=right;case"<"->left<right;case"!="->left!=right;case"=="->left==right;default->left<=right;};}
 	private static void requirePlayer(Minecraft c){if(c==null||c.player==null||c.gameMode==null)throw new IllegalStateException("Игрок недоступен");}
 	private static void releaseHeld(){if(heldKey!=null){heldKey.setDown(false);heldKey=null;}}
-	private static void cleanupAction(){releaseHeld();Minecraft c=Minecraft.getInstance();if(previousSlot>=0&&c!=null&&c.player!=null){c.player.stopUsingItem();c.player.getInventory().setSelectedSlot(previousSlot);}previousSlot=-1;progress=0;}
+
+	/**
+	 * Releases held keys and restores the pre-EAT hotbar slot for EVERY cursor,
+	 * not just the one currently ticking — this runs on finish()/fail()/stop(),
+	 * i.e. whenever the whole run ends, so no background branch is left holding
+	 * a movement key down forever.
+	 */
+	private static void cleanupAction(){
+		Minecraft c=Minecraft.getInstance();
+		for(Cursor cursor:CURSORS){
+			if(cursor.heldKey!=null){cursor.heldKey.setDown(false);cursor.heldKey=null;}
+			if(cursor.previousSlot>=0&&c!=null&&c.player!=null){c.player.stopUsingItem();c.player.getInventory().setSelectedSlot(cursor.previousSlot);}
+			cursor.previousSlot=-1;cursor.progress=0;
+		}
+		releaseHeld();previousSlot=-1;progress=0;
+	}
 
 	private static void runGoto() {
 		if (!dispatched) {
@@ -364,17 +452,28 @@ public final class AutomationRunner {
 	private static float wrap(float value){while(value>180)value-=360;while(value<-180)value+=360;return value;}
 	private static float clamp(float value,float min,float max){return Math.max(min,Math.min(max,value));}
 
-	private static void next(String output) {
-		if (active == null || current == null) return;
-		AutomationNode target = null;
+	private static AutomationNode linkTarget(AutomationNode from, String output) {
 		for (AutomationLink link : active.links) {
-			if (current.id.equals(link.from) && output.equals(link.output)) {
-				target = active.node(link.to);
-				break;
+			if (from.id.equals(link.from) && output.equals(link.output)) {
+				return active.node(link.to);
 			}
 		}
+		return null;
+	}
+
+	private static void next(String output) {
+		if (active == null || current == null) return;
+		AutomationNode target = linkTarget(current, output);
 		if (target == null) {
-			finish("Сценарий завершён: выход «" + output + "» не подключён");
+			// A dangling output on one cursor only ends the whole run if it was
+			// the last cursor standing — otherwise just that branch quietly retires,
+			// so an unwired loop in a background branch can't kill the main task.
+			if (CURSORS.size() <= 1) {
+				finish("Сценарий завершён: выход «" + output + "» не подключён");
+				return;
+			}
+			releaseHeld();
+			CURSORS.remove(currentCursor);
 			return;
 		}
 		current = target;
@@ -387,6 +486,7 @@ public final class AutomationRunner {
 
 	private static void finish(String message) {
 		cleanupAction();
+		CURSORS.clear();
 		active = null;
 		current = null;
 		dispatched = false;
@@ -397,6 +497,7 @@ public final class AutomationRunner {
 	private static void fail(String message) {
 		cleanupAction();
 		BaritoneBridge.stop();
+		CURSORS.clear();
 		active = null;
 		current = null;
 		dispatched = false;

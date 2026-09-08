@@ -277,16 +277,16 @@ public final class RenderUtils {
 	public static int mix(int first, int second, float t) {
 		float k = clamp01(t);
 		return ARGB.color(
-				(int) (ARGB.alpha(first) + (ARGB.alpha(second) - ARGB.alpha(first)) * k),
-				(int) (ARGB.red(first) + (ARGB.red(second) - ARGB.red(first)) * k),
-				(int) (ARGB.green(first) + (ARGB.green(second) - ARGB.green(first)) * k),
-				(int) (ARGB.blue(first) + (ARGB.blue(second) - ARGB.blue(first)) * k)
+				Math.round(ARGB.alpha(first) + (ARGB.alpha(second) - ARGB.alpha(first)) * k),
+				Math.round(ARGB.red(first) + (ARGB.red(second) - ARGB.red(first)) * k),
+				Math.round(ARGB.green(first) + (ARGB.green(second) - ARGB.green(first)) * k),
+				Math.round(ARGB.blue(first) + (ARGB.blue(second) - ARGB.blue(first)) * k)
 		);
 	}
 
 	/** Меняет прозрачность цвета: alpha01 — от 0 (полностью прозрачный) до 1. */
 	public static int withAlpha(int color, float alpha01) {
-		return ARGB.color((int) (ARGB.alpha(color) * clamp01(alpha01)), ARGB.red(color), ARGB.green(color), ARGB.blue(color));
+		return ARGB.color(Math.round(ARGB.alpha(color) * clamp01(alpha01)), ARGB.red(color), ARGB.green(color), ARGB.blue(color));
 	}
 
 	/** Умножает альфу на коэффициент — нужно для антиалиасинга края. */

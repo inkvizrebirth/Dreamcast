@@ -6,9 +6,9 @@ import net.minecraft.util.Util;
 /**
  * Темы клиента: пара цветов градиента + плавный «перелив» между ними.
  *
- * Пресеты заданы в {@link ClickGuiModule} (настройка «Тема»), свои цвета —
- * двумя настройками-цветами там же. Всё, что здесь, — только чтение: тема
- * спрашивается каждый кадр, поэтому методы дешёвые и без аллокаций.
+ * Пресеты тем хранятся здесь и выбираются по идентификатору. Всё, что здесь,
+ * — только чтение: тема спрашивается каждый кадр, поэтому методы дешёвые и
+ * без аллокаций.
  *
  * Градиент «переливается»: фаза бегает по синусу, и в каждый момент цвета
  * чуть сдвинуты друг к другу — окно выглядит живым даже в статике.
@@ -39,17 +39,29 @@ public final class ClientTheme {
 		return PRESETS[0];
 	}
 
+	private static String currentPresetId = "dreamcast";
+
+	/** Возвращает идентификатор текущего пресета темы. */
+	public static String presetId() {
+		return currentPresetId;
+	}
+
+	/** Выбирает пресет темы по идентификатору. */
+	public static void setPreset(String id) {
+		currentPresetId = preset(id).id();
+	}
+
 	private ClientTheme() {
 	}
 
 	/** Первый цвет темы. */
 	public static int first() {
-		return PRESETS[0].first();
+		return preset(currentPresetId).first();
 	}
 
 	/** Второй цвет темы. */
 	public static int second() {
-		return PRESETS[0].second();
+		return preset(currentPresetId).second();
 	}
 
 	/**
@@ -74,8 +86,7 @@ public final class ClientTheme {
 		float phase = (float) Math.sin(now / 1000.0 * speed * 2.4);
 		float shift = 0.5f + 0.5f * phase;
 		// Смешиваем с бэкингом: t уходит в «пружину» между цветами
-		float k = clamp01(0.5f * shift + t * (1.0f - 0.5f * Math.abs(shift - 0.5f) * 2));
-		k = clamp01(t + (shift - 0.5f) * (1.0f - Math.abs(t - 0.5f) * 2) * 0.65f);
+		float k = clamp01(t + (shift - 0.5f) * (1.0f - Math.abs(t - 0.5f) * 2) * 0.65f);
 		return RenderUtils.mix(first(), second(), k);
 	}
 

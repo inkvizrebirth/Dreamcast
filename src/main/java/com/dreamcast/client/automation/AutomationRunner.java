@@ -103,8 +103,8 @@ public final class AutomationRunner {
 				case DROP_ITEM -> { containerClick("drop"); next("next"); }
 				case TAKE_CONTAINER -> takeContainer();
 				case EAT -> eat();
-				case FOOD_CHECK -> next(compare(Minecraft.getInstance().player.getFoodData().getFoodLevel(), current.value("operator"), number(resolve(current.value("value")))) ? "true" : "false");
-				case HEALTH_CHECK -> next(compare(Minecraft.getInstance().player.getHealth(), current.value("operator"), number(resolve(current.value("value")))) ? "true" : "false");
+				case FOOD_CHECK -> next(testFood() ? "true" : "false");
+				case HEALTH_CHECK -> next(testHealth() ? "true" : "false");
 				case ITEM_CHECK -> next(hasItem() ? "true" : "false");
 				case LOOK -> look();
 				case MOVE -> holdMovement(false);
@@ -266,6 +266,18 @@ public final class AutomationRunner {
 		double actual=switch(current.value("axis").toLowerCase(Locale.ROOT)){case"x"->client.player.getX();case"z"->client.player.getZ();default->client.player.getY();};
 		double expected=number(resolve(current.value("value")));String op=current.value("operator");
 		return switch(op){case">"->actual>expected;case">="->actual>=expected;case"<"->actual<expected;case"<="->actual<=expected;case"!="->actual!=expected;default->Math.abs(actual-expected)<.5;};
+	}
+
+	private static boolean testFood() {
+		Minecraft client = Minecraft.getInstance();
+		requirePlayer(client);
+		return compare(client.player.getFoodData().getFoodLevel(), current.value("operator"), number(resolve(current.value("value"))));
+	}
+
+	private static boolean testHealth() {
+		Minecraft client = Minecraft.getInstance();
+		requirePlayer(client);
+		return compare(client.player.getHealth(), current.value("operator"), number(resolve(current.value("value"))));
 	}
 
 	private static boolean testCondition() {

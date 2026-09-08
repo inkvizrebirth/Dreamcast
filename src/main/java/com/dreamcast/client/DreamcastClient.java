@@ -9,6 +9,7 @@ import com.dreamcast.client.gui.RecordingHudElement;
 import com.dreamcast.client.interaction.RegionInteractionHandler;
 import com.dreamcast.client.render.RegionRenderer;
 import com.dreamcast.client.render.RegionMinimapRenderer;
+import com.dreamcast.client.region.RegionManager;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
 import net.fabricmc.api.ClientModInitializer;
@@ -29,6 +30,7 @@ public final class DreamcastClient implements ClientModInitializer {
 
 	@Override public void onInitializeClient(){
 		AutomationManager.load();
+		RegionManager.getInstance().loadFromFile();
 		KeyMapping open=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.dreamcast.automator",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_RIGHT_SHIFT,KEY_CATEGORY));
 		KeyMapping freeCam=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.dreamcast.region_freecam",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_F7,KEY_CATEGORY));
 		KeyMapping stopRecording=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.dreamcast.stop_recording",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_F6,KEY_CATEGORY));
@@ -47,7 +49,7 @@ public final class DreamcastClient implements ClientModInitializer {
 		regionInteraction.register();
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID,"region_cursor"),regionInteraction);
 		new RegionRenderer().register();
-		Runtime.getRuntime().addShutdownHook(new Thread(AutomationManager::save,"dreamcast-automation-save"));
+		Runtime.getRuntime().addShutdownHook(new Thread(()->{AutomationManager.save();RegionManager.getInstance().saveToFile();},"dreamcast-automation-save"));
 		LOGGER.info("{} Automator {} готов. Меню — правый Shift.",MOD_NAME,MOD_VERSION);
 	}
 }

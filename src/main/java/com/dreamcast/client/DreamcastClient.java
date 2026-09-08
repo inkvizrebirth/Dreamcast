@@ -1,5 +1,6 @@
 package com.dreamcast.client;
 
+import com.dreamcast.client.automation.ActionRecorder;
 import com.dreamcast.client.automation.AutomationManager;
 import com.dreamcast.client.automation.AutomationRunner;
 import com.dreamcast.client.gui.ClickGuiScreen;
@@ -23,8 +24,14 @@ public final class DreamcastClient implements ClientModInitializer {
 	@Override public void onInitializeClient(){
 		AutomationManager.load();
 		KeyMapping open=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.dreamcast.automator",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_RIGHT_SHIFT,KEY_CATEGORY));
-		ClientTickEvents.END_CLIENT_TICK.register(client->{while(open.consumeClick())ClickGuiScreen.open();AutomationRunner.tick();});
-		ClientPlayConnectionEvents.DISCONNECT.register((handler,client)->AutomationRunner.stop("Соединение с миром закрыто"));
+		KeyMapping stopRecording=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.dreamcast.stop_recording",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_F6,KEY_CATEGORY));
+		ClientTickEvents.END_CLIENT_TICK.register(client->{
+			while(open.consumeClick())ClickGuiScreen.open();
+			while(stopRecording.consumeClick())ActionRecorder.stop();
+			ActionRecorder.tick();
+			AutomationRunner.tick();
+		});
+		ClientPlayConnectionEvents.DISCONNECT.register((handler,client)->{AutomationRunner.stop("Соединение с миром закрыто");ActionRecorder.stop();});
 		Runtime.getRuntime().addShutdownHook(new Thread(AutomationManager::save,"dreamcast-automation-save"));
 		LOGGER.info("{} Automator {} готов. Меню — правый Shift.",MOD_NAME,MOD_VERSION);
 	}

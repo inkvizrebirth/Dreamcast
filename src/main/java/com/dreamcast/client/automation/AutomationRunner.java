@@ -135,6 +135,7 @@ public final class AutomationRunner {
 				status = "Жду флаг: " + flag;
 				if (FLAGS.contains(flag)) next("next");
 			}
+			case PLAYBACK -> runPlayback();
 			case SET_VARIABLE -> {
 				String name = current.value("name").trim();
 				if (!name.isEmpty()) VARIABLES.put(name, resolve(current.value("value")));
@@ -200,6 +201,50 @@ public final class AutomationRunner {
 		AutomationNode branchTarget = linkTarget(source, "true");
 		if (branchTarget != null) CURSORS.add(new Cursor(branchTarget, System.currentTimeMillis()));
 		next("false");
+	}
+
+	/**
+	 * Replays frames captured by {@link ActionRecorder}: one recorded tick per
+	 * game tick, driving the same movement KeyMappings and setting absolute
+	 * yaw/pitch directly — the exact primitives {@link #holdMovement} and
+	 * {@link #look} already use, just stepped frame by frame instead of held
+	 * for a duration. {@code progress} (per-cursor) is the frame index.
+	 */
+	private static void runPlayback() {
+		Minecraft c = Minecraft.getInstance();
+		requirePlayer(c);
+		String raw = current.value("frames");
+		String[] frames = raw == null || raw.isEmpty() ? new String[0] : raw.split(";");
+		if (progress >= frames.length) {
+			releaseMovementKeys(c);
+			next("next");
+			return;
+		}
+		String[] parts = frames[progress].split(",");
+		if (parts.length == 3) {
+			int mask = (int) number(parts[0]);
+			c.options.keyUp.setDown((mask & 1) != 0);
+			c.options.keyDown.setDown((mask & 2) != 0);
+			c.options.keyLeft.setDown((mask & 4) != 0);
+			c.options.keyRight.setDown((mask & 8) != 0);
+			c.options.keyJump.setDown((mask & 16) != 0);
+			c.options.keyShift.setDown((mask & 32) != 0);
+			c.player.setYRot((float) number(parts[1]));
+			c.player.setXRot((float) number(parts[2]));
+		}
+		progress++;
+		status = "Воспроизвожу запись: " + progress + "/" + frames.length;
+	}
+
+	/** Unconditionally releases every movement key PLAYBACK may be driving — safe to call any time, held or not. */
+	private static void releaseMovementKeys(Minecraft c) {
+		if (c == null || c.options == null) return;
+		c.options.keyUp.setDown(false);
+		c.options.keyDown.setDown(false);
+		c.options.keyLeft.setDown(false);
+		c.options.keyRight.setDown(false);
+		c.options.keyJump.setDown(false);
+		c.options.keyShift.setDown(false);
 	}
 
 	private static void selectSlot() {
@@ -281,6 +326,7 @@ public final class AutomationRunner {
 			cursor.previousSlot=-1;cursor.progress=0;
 		}
 		releaseHeld();previousSlot=-1;progress=0;
+		releaseMovementKeys(Minecraft.getInstance());
 	}
 
 	private static void runGoto() {

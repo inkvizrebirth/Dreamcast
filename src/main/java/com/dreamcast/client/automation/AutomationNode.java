@@ -76,6 +76,7 @@ public final class AutomationNode {
 			}
 			case SET_FLAG -> values.put("flag", "мой_флаг");
 			case WAIT_FLAG -> values.put("flag", "мой_флаг");
+			case PLAYBACK -> values.put("frames", "");
 			default -> { }
 		}
 	}

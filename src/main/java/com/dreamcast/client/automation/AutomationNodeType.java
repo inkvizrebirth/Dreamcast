@@ -37,6 +37,7 @@ public enum AutomationNodeType {
 	PARALLEL("Параллельный поток", "Запустить независимую ветку рядом с текущей", 0xFF9B8CFF),
 	SET_FLAG("Установить флаг", "Поднять именованный флаг для других веток", 0xFF5EE0C0),
 	WAIT_FLAG("Ожидание флага", "Ждать, пока другая ветка не поднимет флаг", 0xFF5EBFE0),
+	PLAYBACK("Воспроизведение записи", "Повторяет ранее записанные движения игрока", 0xFFC7A6FF),
 	STOP("Стоп", "Завершить сценарий", 0xFFFF6B78);
 
 	public enum Category {
@@ -66,7 +67,7 @@ public enum AutomationNodeType {
 			case SELECT_SLOT, USE, MOVE_ITEM, QUICK_MOVE, DROP_ITEM, TAKE_CONTAINER, EAT -> Category.INVENTORY;
 			case CONDITION, COORDINATE_CHECK, FOOD_CHECK, HEALTH_CHECK, ITEM_CHECK, CONTAINER_CHECK, PLAYER_COUNT_CHECK -> Category.CHECKS;
 			case LOOK, MOVE, JUMP, SNEAK, ATTACK, INTERACT -> Category.CONTROL;
-			case CHAT, WAIT, SET_VARIABLE, START, STOP, PARALLEL, SET_FLAG, WAIT_FLAG -> Category.MISC;
+			case CHAT, WAIT, SET_VARIABLE, START, STOP, PARALLEL, SET_FLAG, WAIT_FLAG, PLAYBACK -> Category.MISC;
 		};
 	}
 	public boolean branching() {

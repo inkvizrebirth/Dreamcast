@@ -71,6 +71,13 @@ public final class AutomationManager {
 		return config;
 	}
 
+	/** Adds an already-built config (e.g. one produced by {@link ActionRecorder}) and persists it. */
+	public static void add(AutomationConfig config) {
+		if (config == null) return;
+		CONFIGS.add(config);
+		save();
+	}
+
 	public static void remove(AutomationConfig config) {
 		if (AutomationRunner.isRunning(config)) AutomationRunner.stop("Конфиг удалён");
 		CONFIGS.remove(config);

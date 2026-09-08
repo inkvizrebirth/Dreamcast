@@ -30,6 +30,8 @@ public final class AutomationNode {
 				values.put("x", "${player.x}");
 				values.put("y", "${player.y}");
 				values.put("z", "${player.z}");
+				values.put("sprint", "");
+				values.put("path", "straight");
 			}
 			case MINE -> {
 				values.put("block", "minecraft:diamond_ore");

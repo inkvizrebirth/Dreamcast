@@ -131,20 +131,37 @@ public final class BaritoneBridge {
 		return sendChat(normalized);
 	}
 
-	/** Applies conservative anti-cheat settings used by per-config «Легит» mode. */
+	/**
+	 * Applies conservative anti-cheat settings used by per-config «Легит» mode.
+	 *
+	 * Legit is about HOW the bot moves the camera/paths (smooth, human-plausible),
+	 * not about avoiding sprint or jumping — those are normal player behaviour and
+	 * stay under the separate per-node Sprint/Jump toggle (see {@link #configureMovement}).
+	 */
 	public static void configureLegit(boolean legit) {
 		try {
 			Class<?> api = classFor(API_CLASS);
 			Object settings = api == null ? null : invokeStatic(api, "getSettings");
 			if (settings == null) return;
-			setSetting(settings, "allowSprint", !legit);
-			setSetting(settings, "allowParkour", !legit);
-			setSetting(settings, "allowParkourPlace", !legit);
 			setSetting(settings, "antiCheatCompatibility", legit);
 			setSetting(settings, "randomLooking", legit);
 			setSetting(settings, "overshootTraverse", legit);
 		} catch (ReflectiveOperationException | RuntimeException error) {
 			DreamcastClient.LOGGER.warn("Не удалось применить настройки Легит к Baritone", error);
+		}
+	}
+
+	/** Per-node Sprint/Jump toggle for GOTO-style nodes — independent of «Легит». */
+	public static void configureMovement(boolean sprint, boolean jump) {
+		try {
+			Class<?> api = classFor(API_CLASS);
+			Object settings = api == null ? null : invokeStatic(api, "getSettings");
+			if (settings == null) return;
+			setSetting(settings, "allowSprint", sprint);
+			setSetting(settings, "allowParkour", jump);
+			setSetting(settings, "allowParkourPlace", jump);
+		} catch (ReflectiveOperationException | RuntimeException error) {
+			DreamcastClient.LOGGER.warn("Не удалось применить настройки движения к Baritone", error);
 		}
 	}
 

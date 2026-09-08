@@ -4,12 +4,14 @@ import com.dreamcast.client.automation.ActionRecorder;
 import com.dreamcast.client.automation.AutomationManager;
 import com.dreamcast.client.automation.AutomationRunner;
 import com.dreamcast.client.gui.ClickGuiScreen;
+import com.dreamcast.client.gui.RecordingHudElement;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
@@ -32,6 +34,7 @@ public final class DreamcastClient implements ClientModInitializer {
 			AutomationRunner.tick();
 		});
 		ClientPlayConnectionEvents.DISCONNECT.register((handler,client)->{AutomationRunner.stop("Соединение с миром закрыто");ActionRecorder.stop();});
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID,"recording_bar"),new RecordingHudElement());
 		Runtime.getRuntime().addShutdownHook(new Thread(AutomationManager::save,"dreamcast-automation-save"));
 		LOGGER.info("{} Automator {} готов. Меню — правый Shift.",MOD_NAME,MOD_VERSION);
 	}

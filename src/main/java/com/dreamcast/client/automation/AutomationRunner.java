@@ -286,11 +286,15 @@ public final class AutomationRunner {
 		for(ItemStack stack:c.player.getInventory().getNonEquipmentItems()){if(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString().equals(wanted))found+=stack.getCount();}return found>=need;
 	}
 
+	// Всегда линейный доворот, никогда мгновенный: «Легит» — про anti-cheat-маршрутизацию
+	// Baritone и человеческую траекторию, а не про искусственно замедленную камеру.
+	private static final float ROTATION_SPEED=26F;
+
 	private static void look() {
 		Minecraft c=Minecraft.getInstance();requirePlayer(c);float yaw,pitch;
 		if("point".equalsIgnoreCase(current.value("mode"))){Vec3 eye=c.player.getEyePosition();double dx=number(resolve(current.value("x")))-eye.x,dy=number(resolve(current.value("y")))-eye.y,dz=number(resolve(current.value("z")))-eye.z;yaw=(float)Math.toDegrees(Math.atan2(-dx,dz));pitch=(float)-Math.toDegrees(Math.atan2(dy,Math.hypot(dx,dz)));}
 		else{yaw=(float)number(resolve(current.value("yaw")));pitch=(float)number(resolve(current.value("pitch")));}
-		float yd=wrap(yaw-c.player.getYRot()),pd=pitch-c.player.getXRot(),speed=active.legit?12:28;c.player.setYRot(c.player.getYRot()+clamp(yd,-speed,speed));c.player.setXRot(c.player.getXRot()+clamp(pd,-speed,speed));
+		float yd=wrap(yaw-c.player.getYRot()),pd=pitch-c.player.getXRot();c.player.setYRot(c.player.getYRot()+clamp(yd,-ROTATION_SPEED,ROTATION_SPEED));c.player.setXRot(c.player.getXRot()+clamp(pd,-ROTATION_SPEED,ROTATION_SPEED));
 		if(Math.abs(yd)<=1.5&&Math.abs(pd)<=1.5)next("next");else status="Плавно поворачиваюсь";
 	}
 
@@ -329,18 +333,63 @@ public final class AutomationRunner {
 		releaseMovementKeys(Minecraft.getInstance());
 	}
 
+	/**
+	 * {@code progress} doubles as a two-stage marker for curved routing: 0 while
+	 * heading to the detour waypoint, 1 once heading to the real destination.
+	 * Straight routing never advances past stage 0's single goal call.
+	 */
 	private static void runGoto() {
+		int x = (int) Math.floor(number(resolve(current.value("x"))));
+		int y = (int) Math.floor(number(resolve(current.value("y"))));
+		int z = (int) Math.floor(number(resolve(current.value("z"))));
+		boolean curved = "curved".equalsIgnoreCase(current.value("path"));
 		if (!dispatched) {
-			int x = (int) Math.floor(number(resolve(current.value("x"))));
-			int y = (int) Math.floor(number(resolve(current.value("y"))));
-			int z = (int) Math.floor(number(resolve(current.value("z"))));
+			applyMovementSettings();
 			dispatched = true;
 			enteredAt = System.currentTimeMillis();
-			status = "Иду к " + x + ", " + y + ", " + z;
-			if (!BaritoneBridge.goal(x, y, z, false)) fail("Baritone не принял маршрут");
+			if (curved && progress == 0) {
+				int[] mid = curvedWaypoint(x, y, z);
+				status = "Иду в обход к " + x + ", " + y + ", " + z;
+				if (!BaritoneBridge.goal(mid[0], mid[1], mid[2], false)) fail("Baritone не принял маршрут");
+			} else {
+				status = "Иду к " + x + ", " + y + ", " + z;
+				if (!BaritoneBridge.goal(x, y, z, false)) fail("Baritone не принял маршрут");
+			}
 			return;
 		}
-		if (System.currentTimeMillis() - enteredAt > 600 && !BaritoneBridge.isPathing()) next("next");
+		if (System.currentTimeMillis() - enteredAt > 600 && !BaritoneBridge.isPathing()) {
+			if (curved && progress == 0) {
+				progress = 1;
+				dispatched = false;
+				return;
+			}
+			next("next");
+		}
+	}
+
+	/** Reads the "sprint" node value ("", "sprint", "jump" or "sprint,jump") into Baritone settings. */
+	private static void applyMovementSettings() {
+		String raw = current.value("sprint");
+		BaritoneBridge.configureMovement(raw.contains("sprint"), raw.contains("jump"));
+	}
+
+	/**
+	 * One deliberate detour point roughly halfway to the target, offset
+	 * sideways from the straight line — a simple, cheap stand-in for a
+	 * "wandering but still efficient" route, not a real spline.
+	 */
+	private static int[] curvedWaypoint(int x, int y, int z) {
+		Minecraft c = Minecraft.getInstance();
+		double px = c.player.getX(), pz = c.player.getZ();
+		double dx = x - px, dz = z - pz;
+		double distance = Math.hypot(dx, dz);
+		if (distance < 4) return new int[]{x, y, z};
+		double perpX = -dz / distance, perpZ = dx / distance;
+		double side = (current.id.hashCode() & 1) == 0 ? 1.0 : -1.0;
+		double offset = Math.min(24.0, distance * 0.35) * side;
+		int midX = (int) Math.round(px + dx * 0.5 + perpX * offset);
+		int midZ = (int) Math.round(pz + dz * 0.5 + perpZ * offset);
+		return new int[]{midX, y, midZ};
 	}
 
 	private static void runMine() {
@@ -388,11 +437,9 @@ public final class AutomationRunner {
 		Vec3 eye=client.player.getEyePosition(), target=new Vec3(x+.5,y+.5,z+.5);
 		double dx=target.x-eye.x, dy=target.y-eye.y, dz=target.z-eye.z, flat=Math.hypot(dx,dz);
 		float yaw=(float)Math.toDegrees(Math.atan2(-dx,dz)), pitch=(float)-Math.toDegrees(Math.atan2(dy,flat));
-		if(active.legit){
-			float yd=wrap(yaw-client.player.getYRot()), pd=pitch-client.player.getXRot();
-			client.player.setYRot(client.player.getYRot()+clamp(yd,-16,16));client.player.setXRot(client.player.getXRot()+clamp(pd,-13,13));
-			if(Math.abs(yd)>2||Math.abs(pd)>2){status="Плавно навожусь";return;}
-		}else{client.player.setYRot(yaw);client.player.setXRot(pitch);}
+		float yd=wrap(yaw-client.player.getYRot()), pd=pitch-client.player.getXRot();
+		client.player.setYRot(client.player.getYRot()+clamp(yd,-ROTATION_SPEED,ROTATION_SPEED));client.player.setXRot(client.player.getXRot()+clamp(pd,-ROTATION_SPEED,ROTATION_SPEED));
+		if(Math.abs(yd)>2||Math.abs(pd)>2){status="Плавно навожусь";return;}
 		BlockPos pos=new BlockPos(x,y,z);BlockHitResult hit=new BlockHitResult(target,Direction.UP,pos,false);
 		client.gameMode.useItemOn(client.player,InteractionHand.MAIN_HAND,hit);next("next");
 	}

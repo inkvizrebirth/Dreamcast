@@ -24,6 +24,7 @@ public final class ActionRecorder {
 	private ActionRecorder() { }
 
 	public static boolean isActive() { return active; }
+	public static int frameCount() { return FRAMES.size(); }
 
 	public static void start() {
 		active = true;

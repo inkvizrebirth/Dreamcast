@@ -8,6 +8,7 @@
 		"DreamcastGuiMixin",
 		"ExternalButtonMixin",
 		"ExternalEditBoxMixin",
+		"FreeCamInteractionMixin",
 		"ExternalSliderMixin",
 		"ExternalTabButtonMixin",
 		"ExternalWidgetMixin",

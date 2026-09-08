@@ -6,6 +6,7 @@ import com.dreamcast.client.automation.AutomationRunner;
 import com.dreamcast.client.camera.FreeCamController;
 import com.dreamcast.client.gui.ClickGuiScreen;
 import com.dreamcast.client.gui.RecordingHudElement;
+import com.dreamcast.client.interaction.RegionInteractionHandler;
 import com.dreamcast.client.render.RegionRenderer;
 import com.dreamcast.client.render.RegionMinimapRenderer;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -42,6 +43,9 @@ public final class DreamcastClient implements ClientModInitializer {
 		ClientPlayConnectionEvents.DISCONNECT.register((handler,client)->{AutomationRunner.stop("Соединение с миром закрыто");ActionRecorder.stop();});
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID,"recording_bar"),new RecordingHudElement());
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID,"region_minimap"),new RegionMinimapRenderer());
+		RegionInteractionHandler regionInteraction = new RegionInteractionHandler();
+		regionInteraction.register();
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID,"region_cursor"),regionInteraction);
 		new RegionRenderer().register();
 		Runtime.getRuntime().addShutdownHook(new Thread(AutomationManager::save,"dreamcast-automation-save"));
 		LOGGER.info("{} Automator {} готов. Меню — правый Shift.",MOD_NAME,MOD_VERSION);

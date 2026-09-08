@@ -1,7 +1,9 @@
 package com.dreamcast.client.gui;
 
 import com.dreamcast.client.automation.*;
+import com.dreamcast.client.camera.FreeCamController;
 import com.dreamcast.client.gui.theme.DreamcastUi;
+import com.dreamcast.client.region.RegionManager;
 import com.dreamcast.client.util.RenderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -33,7 +35,7 @@ public final class ClickGuiScreen extends Screen {
 	private String linkOutput, focusedField, message="";
 	private String paletteQuery="";
 	private String addMenuQuery="";
-	private boolean addMenuOpen, addConfigChoiceOpen;
+	private boolean addMenuOpen, addConfigChoiceOpen, draggingFreeCamHeight;
 	private String openOptionList;
 	private float dragDx, dragDy;
 	private float paletteScroll,paletteTarget,addMenuScroll,addMenuTarget;
@@ -88,12 +90,25 @@ public final class ClickGuiScreen extends Screen {
 	}
 
 	private void drawEditor(GuiGraphicsExtractor g,int mx,int my){
-		top(g,"Конструктор автоматизации");Box back=new Box(14,12,58,24),add=new Box(width-300,12,78,24),save=new Box(width-214,12,76,24),run=new Box(width-130,12,72,24),stop=new Box(width-52,12,38,24);
+		top(g,"Конструктор автоматизации");Box back=new Box(14,12,58,24),region=new Box(width-388,12,80,24),add=new Box(width-300,12,78,24),save=new Box(width-214,12,76,24),run=new Box(width-130,12,72,24),stop=new Box(width-52,12,38,24);
 		button(g,back,"Назад",back.has(mx,my),MUTED,false);button(g,add,"Добавить",add.has(mx,my),ACCENT,true);button(g,save,"Сохранить",save.has(mx,my),ACCENT,false);
+		boolean freeCam=RegionManager.getInstance().freeCamActive;button(g,region,freeCam?"FreeCam ✓":"FreeCam",region.has(mx,my),0xFF4ED6C8,freeCam);
 		button(g,run,"Запуск",run.has(mx,my),0xFF66D9A3,true);button(g,stop,"■",stop.has(mx,my),0xFFFF6B78,false);
 		Box name=nameBox();field(g,name,editing.name,"name", "name".equals(focusedField),mx,my);
 		Box legit=legitBox();button(g,legit,editing.legit?"✓  Легит":"Легит",legit.has(mx,my),0xFF66D9A3,editing.legit);
-		drawCanvas(g,mx,my);drawPalette(g,mx,my);drawInspector(g,mx,my);if(addMenuOpen)drawAddMenu(g,mx,my);
+		drawCanvas(g,mx,my);drawPalette(g,mx,my);drawInspector(g,mx,my);drawFreeCamSlider(g,mx,my);if(addMenuOpen)drawAddMenu(g,mx,my);
+	}
+	private void drawFreeCamSlider(GuiGraphicsExtractor g,int mx,int my){
+		if(minecraft==null||minecraft.player==null)return;
+		int x=10,y=30,h=120;float min=(float)minecraft.player.getY()+2F,max=(float)minecraft.player.getY()+64F;
+		float value=clamp(RegionManager.getInstance().freeCamHeight,min,max),ratio=(value-min)/(max-min);
+		RenderUtils.fillRounded(g,x,y,12,h,5,0xE02A2D35);int knobY=y+h-Math.round(ratio*h);
+		boolean hover=mx>=x-5&&mx<=x+17&&my>=y&&my<=y+h;RenderUtils.fillRounded(g,x-3,knobY-4,18,8,3,hover?0xFF5BC8FF:0xFFFFFFFF);
+		RenderUtils.textFlat(g,font,Integer.toString(Math.round(value)),x+20,knobY-4,TEXT);
+	}
+	private void updateFreeCamSlider(double mouseY){
+		if(minecraft==null||minecraft.player==null)return;float min=(float)minecraft.player.getY()+2F,max=(float)minecraft.player.getY()+64F;
+		float ratio=clamp((150F-(float)mouseY)/120F,0F,1F);FreeCamController.getInstance().setHeight(min+(max-min)*ratio);
 	}
 	private void drawConfigChoice(GuiGraphicsExtractor g,int mx,int my){
 		Box menu=configChoiceBox();RenderUtils.fillGlassPanel(g,menu.x,menu.y,menu.w,menu.h,8,BORDER,PANEL,PANEL,Util.getMillis());
@@ -213,7 +228,8 @@ public final class ClickGuiScreen extends Screen {
 			return true;}
 		if(addMenuOpen){Box menu=addMenuBox();if(!menu.has(mx,my)){addMenuOpen=false;focusedField=null;return true;}if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT){Box search=new Box(menu.x+10,menu.y+10,menu.w-20,24);if(search.has(mx,my)){focusedField="add-menu-search";return true;}int listTop=menu.y+44,y=listTop+4-Math.round(addMenuScroll);for(AutomationNodeType.Category category:AutomationNodeType.Category.values()){List<AutomationNodeType> types=addMenuTypes(category);if(types.isEmpty())continue;y+=20;for(AutomationNodeType t:types){if(new Box(menu.x+8,y,menu.w-16,38).has(mx,my)&&my>=listTop&&my<menu.y+menu.h-8){addNode(t);return true;}y+=43;}}}return true;}
 		if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT){
-			if(new Box(14,12,58,24).has(mx,my)){save();editing=null;selected=null;return true;}if(new Box(width-300,12,78,24).has(mx,my)){addMenuOpen=true;addMenuScroll=addMenuTarget=0;focusedField=null;return true;}if(new Box(width-214,12,76,24).has(mx,my)){save();toast("Конфиг сохранён");return true;}
+			if(new Box(10,30,12,120).has(mx,my)){draggingFreeCamHeight=true;updateFreeCamSlider(my);return true;}
+			if(new Box(14,12,58,24).has(mx,my)){save();editing=null;selected=null;return true;}if(new Box(width-388,12,80,24).has(mx,my)){FreeCamController.getInstance().toggle();toast(RegionManager.getInstance().freeCamActive?"FreeCam региона включён":"FreeCam региона выключен");return true;}if(new Box(width-300,12,78,24).has(mx,my)){addMenuOpen=true;addMenuScroll=addMenuTarget=0;focusedField=null;return true;}if(new Box(width-214,12,76,24).has(mx,my)){save();toast("Конфиг сохранён");return true;}
 			if(new Box(width-130,12,72,24).has(mx,my)){save();AutomationRunner.start(editing);toast("Сценарий запущен");return true;}if(new Box(width-52,12,38,24).has(mx,my)){AutomationRunner.stop("Остановлено пользователем");return true;}
 			if(nameBox().has(mx,my)){focusedField="name";return true;}if(new Box(10,TOP+42,LEFT-20,24).has(mx,my)){focusedField="palette-search";return true;}}
 		if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT&&legitBox().has(mx,my)){editing.legit=!editing.legit;return true;}
@@ -227,8 +243,8 @@ public final class ClickGuiScreen extends Screen {
 			String out=hitOutput(n,mx,my);if(out!=null){linkFrom=n;linkOutput=out;return true;}if(b.has(mx,my)){if(selected!=n)inspectorScroll=inspectorTarget=0;selected=n;dragging=n;dragDx=(float)mx-n.x;dragDy=(float)my-n.y;return true;}}
 		selected=null;linkFrom=null;return true;
 	}
-	@Override public boolean mouseDragged(MouseButtonEvent e,double dx,double dy){if(dragging!=null){float maxX=width-LEFT-RIGHT-NW-8,maxY=height-TOP-NH-8;float clampedX=clamp((float)e.x()-dragDx,8,maxX),clampedY=clamp((float)e.y()-dragDy,8,maxY);dragging.x=clamp(Math.round(clampedX/8F)*8F,8,maxX);dragging.y=clamp(Math.round(clampedY/8F)*8F,8,maxY);return true;}return super.mouseDragged(e,dx,dy);}
-	@Override public boolean mouseReleased(MouseButtonEvent e){if(dragging!=null){dragging=null;return true;}return super.mouseReleased(e);}
+	@Override public boolean mouseDragged(MouseButtonEvent e,double dx,double dy){if(draggingFreeCamHeight){updateFreeCamSlider(e.y());return true;}if(dragging!=null){float maxX=width-LEFT-RIGHT-NW-8,maxY=height-TOP-NH-8;float clampedX=clamp((float)e.x()-dragDx,8,maxX),clampedY=clamp((float)e.y()-dragDy,8,maxY);dragging.x=clamp(Math.round(clampedX/8F)*8F,8,maxX);dragging.y=clamp(Math.round(clampedY/8F)*8F,8,maxY);return true;}return super.mouseDragged(e,dx,dy);}
+	@Override public boolean mouseReleased(MouseButtonEvent e){if(draggingFreeCamHeight){draggingFreeCamHeight=false;return true;}if(dragging!=null){dragging=null;return true;}return super.mouseReleased(e);}
 	@Override public boolean mouseScrolled(double mx,double my,double sx,double sy){if(editing!=null&&addMenuOpen&&addMenuBox().has(mx,my)){int max=Math.max(0,addMenuContentHeight()-(addMenuBox().h-52));addMenuTarget=clamp(addMenuTarget-(float)sy*48,0,max);return true;}if(editing!=null&&mx<LEFT){int count=paletteTypes().size(),max=Math.max(0,count*43-(height-TOP-78));paletteTarget=clamp(paletteTarget-(float)sy*48,0,max);return true;}if(editing!=null&&mx>width-RIGHT&&selected!=null){int max=Math.max(0,selected.values.size()*49-(height-TOP-128));inspectorTarget=clamp(inspectorTarget-(float)sy*48,0,max);return true;}return super.mouseScrolled(mx,my,sx,sy);}
 	@Override public boolean charTyped(CharacterEvent e){if(focusedField==null||!e.isAllowedChatCharacter())return super.charTyped(e);String s=e.codepointAsString();
 		if("name".equals(focusedField)&&editing.name.length()<48)editing.name+=s;else if("palette-search".equals(focusedField)&&paletteQuery.length()<48)paletteQuery+=s;else if("add-menu-search".equals(focusedField)&&addMenuQuery.length()<48)addMenuQuery+=s;else if(focusedField.startsWith("value:")&&selected!=null){String k=focusedField.substring(6),v=selected.value(k);if(v.length()<120)selected.values.put(k,v+s);}return true;}

@@ -2,6 +2,7 @@ package com.dreamcast.client.automation;
 
 import com.dreamcast.client.DreamcastClient;
 import com.dreamcast.client.baritone.BaritoneBridge;
+import com.dreamcast.client.region.RegionManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.core.BlockPos;
@@ -339,9 +340,10 @@ public final class AutomationRunner {
 	}
 
 	private static void runGoto() {
-		int x = (int) Math.floor(number(resolve(current.value("x"))));
-		int y = (int) Math.floor(number(resolve(current.value("y"))));
-		int z = (int) Math.floor(number(resolve(current.value("z"))));
+		BlockPos marker=markerPosition();
+		int x = marker==null?(int)Math.floor(number(resolve(current.value("x")))):marker.getX();
+		int y = marker==null?(int)Math.floor(number(resolve(current.value("y")))):marker.getY();
+		int z = marker==null?(int)Math.floor(number(resolve(current.value("z")))):marker.getZ();
 		boolean curved = "curved".equalsIgnoreCase(current.value("path"));
 		if (curved && progress == 0 && scratch == null) scratch = curvedWaypoints(x, y, z);
 		int[][] waypoints = curved && scratch instanceof int[][] savedWaypoints ? savedWaypoints : new int[0][];
@@ -453,10 +455,12 @@ public final class AutomationRunner {
 
 	private static boolean testCoordinate() {
 		Minecraft client=Minecraft.getInstance();if(client.player==null)return false;
+		BlockPos marker=markerPosition();if(marker!=null)return Math.abs(client.player.getX()-marker.getX())<.5&&Math.abs(client.player.getY()-marker.getY())<.5&&Math.abs(client.player.getZ()-marker.getZ())<.5;
 		double actual=switch(current.value("axis").toLowerCase(Locale.ROOT)){case"x"->client.player.getX();case"z"->client.player.getZ();default->client.player.getY();};
 		double expected=number(resolve(current.value("value")));String op=current.value("operator");
 		return switch(op){case">"->actual>expected;case">="->actual>=expected;case"<"->actual<expected;case"<="->actual<=expected;case"!="->actual!=expected;default->Math.abs(actual-expected)<.5;};
 	}
+	private static BlockPos markerPosition(){String name=current==null?"":current.value("marker").trim();if(name.isEmpty())return null;return RegionManager.getInstance().getMarkerByName(name).map(marker->marker.position).orElse(null);}
 
 	private static boolean testFood() {
 		Minecraft client = Minecraft.getInstance();

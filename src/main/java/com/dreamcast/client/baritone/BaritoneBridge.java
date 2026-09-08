@@ -2,6 +2,7 @@ package com.dreamcast.client.baritone;
 
 import com.dreamcast.client.DreamcastClient;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.chat.Component;
 
@@ -103,6 +104,7 @@ public final class BaritoneBridge {
 	 * @param forceChat true — сразу использовать чат-команду, минуя API
 	 */
 	public static boolean goal(int x, int y, int z, boolean forceChat) {
+		if (!BaritoneRegionFilter.allows(new BlockPos(x,y,z))) { notify("§c[Dreamcast] Цель находится за пределами региона"); return false; }
 		if (!isAvailable()) {
 			return false;
 		}

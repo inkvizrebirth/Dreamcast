@@ -32,6 +32,7 @@ public final class AutomationNode {
 				values.put("z", "${player.z}");
 				values.put("sprint", "");
 				values.put("path", "straight");
+				values.put("coordinate_mode", "manual"); values.put("marker", "");
 			}
 			case MINE -> {
 				values.put("block", "minecraft:diamond_ore");
@@ -47,6 +48,7 @@ public final class AutomationNode {
 			case FARM -> values.put("radius", "32");
 			case COORDINATE_CHECK -> {
 				values.put("axis", "y"); values.put("operator", ">="); values.put("value", "64");
+				values.put("marker", "");
 			}
 			case CHAT -> values.put("message", "Готово!");
 			case SELECT_SLOT -> values.put("slot", "1");

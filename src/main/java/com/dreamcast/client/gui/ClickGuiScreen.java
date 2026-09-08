@@ -164,7 +164,7 @@ public final class ClickGuiScreen extends Screen {
 			if(selected.type==AutomationNodeType.PLAYBACK&&"frames".equals(e.getKey()))continue;
 			String id="value:"+e.getKey();RenderUtils.textFlat(g,font,label(e.getKey()),x+16,y,MUTED);
 			Box f=new Box(x+16,y+13,RIGHT-32,24);
-			if(selected.type==AutomationNodeType.GOTO&&("sprint".equals(e.getKey())||"path".equals(e.getKey()))){
+			if((selected.type==AutomationNodeType.GOTO&&("sprint".equals(e.getKey())||"path".equals(e.getKey())||"coordinate_mode".equals(e.getKey())||"marker".equals(e.getKey())) )||(selected.type==AutomationNodeType.COORDINATE_CHECK&&"marker".equals(e.getKey()))){
 				button(g,f,optionListLabel(e.getKey(),e.getValue()),f.has(mx,my)||id.equals(openOptionList),ACCENT,false);
 			}else field(g,f,e.getValue(),id,id.equals(focusedField),mx,my);
 			y+=49;}
@@ -174,6 +174,8 @@ public final class ClickGuiScreen extends Screen {
 	}
 
 	private String optionListLabel(String key,String value){
+		if("marker".equals(key))return value.isBlank()?"Выберите переменную":value;
+		if("coordinate_mode".equals(key))return "variable".equalsIgnoreCase(value)?"Переменная":"Ручной ввод";
 		if("path".equals(key))return"curved".equalsIgnoreCase(value)?"Кривой":"Прямой";
 		boolean sprint=value.contains("sprint"),jump=value.contains("jump");
 		if(!sprint&&!jump)return"—";
@@ -197,6 +199,10 @@ public final class ClickGuiScreen extends Screen {
 			Box straightRow=new Box(b.x+14,b.y+34,b.w-28,28),curvedRow=new Box(b.x+14,b.y+66,b.w-28,28);
 			button(g,straightRow,"Прямой",straightRow.has(mx,my),ACCENT,!"curved".equalsIgnoreCase(raw));
 			button(g,curvedRow,"Кривой",curvedRow.has(mx,my),ACCENT,"curved".equalsIgnoreCase(raw));
+		}else if("value:coordinate_mode".equals(openOptionList)){
+			Box manual=new Box(b.x+14,b.y+34,b.w-28,28),variable=new Box(b.x+14,b.y+66,b.w-28,28);button(g,manual,"Ручной ввод",manual.has(mx,my),ACCENT,"manual".equals(selected.value("coordinate_mode")));button(g,variable,"Переменная",variable.has(mx,my),ACCENT,"variable".equals(selected.value("coordinate_mode")));
+		}else if("value:marker".equals(openOptionList)){
+			int y=b.y+20;for(var marker:RegionManager.getInstance().getAllMarkers().stream().limit(3).toList()){Box row=new Box(b.x+14,y,b.w-28,28);button(g,row,marker.name,row.has(mx,my),ACCENT,marker.name.equals(selected.value("marker")));y+=32;}
 		}
 	}
 
@@ -223,6 +229,10 @@ public final class ClickGuiScreen extends Screen {
 				}else if("value:path".equals(openOptionList)){
 					if(row1.has(mx,my)){selected.values.put("path","straight");openOptionList=null;return true;}
 					if(row2.has(mx,my)){selected.values.put("path","curved");openOptionList=null;return true;}
+				}else if("value:coordinate_mode".equals(openOptionList)){
+					if(row1.has(mx,my)){selected.values.put("coordinate_mode","manual");openOptionList=null;return true;}if(row2.has(mx,my)){selected.values.put("coordinate_mode","variable");openOptionList=null;return true;}
+				}else if("value:marker".equals(openOptionList)){
+					int y=b.y+20;for(var marker:RegionManager.getInstance().getAllMarkers().stream().limit(3).toList()){if(new Box(b.x+14,y,b.w-28,28).has(mx,my)){selected.values.put("marker",marker.name);if(selected.type==AutomationNodeType.GOTO)selected.values.put("coordinate_mode","variable");openOptionList=null;return true;}y+=32;}
 				}
 			}
 			return true;}
@@ -235,7 +245,7 @@ public final class ClickGuiScreen extends Screen {
 		if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT&&legitBox().has(mx,my)){editing.legit=!editing.legit;return true;}
 		if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT&&selected!=null&&selected.type!=AutomationNodeType.START&&new Box(width-RIGHT+16,height-42,92,25).has(mx,my)){duplicateSelected();return true;}
 		if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT&&selected!=null&&selected.type!=AutomationNodeType.START&&new Box(width-RIGHT+116,height-42,92,25).has(mx,my)){removeSelected();return true;}
-		if(selected!=null){int y=TOP+76-Math.round(inspectorScroll);for(String key:selected.values.keySet()){if(selected.type==AutomationNodeType.PLAYBACK&&"frames".equals(key))continue;if(new Box(width-RIGHT+16,y+13,RIGHT-32,24).has(mx,my)&&my>=TOP+68&&my<height-50){if(selected.type==AutomationNodeType.GOTO&&("sprint".equals(key)||"path".equals(key)))openOptionList="value:"+key;else focusedField="value:"+key;return true;}y+=49;}}focusedField=null;
+		if(selected!=null){int y=TOP+76-Math.round(inspectorScroll);for(String key:selected.values.keySet()){if(selected.type==AutomationNodeType.PLAYBACK&&"frames".equals(key))continue;if(new Box(width-RIGHT+16,y+13,RIGHT-32,24).has(mx,my)&&my>=TOP+68&&my<height-50){if((selected.type==AutomationNodeType.GOTO&&("sprint".equals(key)||"path".equals(key)||"coordinate_mode".equals(key)||"marker".equals(key)))||(selected.type==AutomationNodeType.COORDINATE_CHECK&&"marker".equals(key)))openOptionList="value:"+key;else focusedField="value:"+key;return true;}y+=49;}}focusedField=null;
 		if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT&&new Box(LEFT+18,height-54,36,36).has(mx,my)){toast("Выберите действие слева");return true;}
 		int py=TOP+78-Math.round(paletteScroll);for(AutomationNodeType t:paletteTypes()){if(new Box(10,py,LEFT-20,38).has(mx,my)&&my>=TOP+72){AutomationNode n=new AutomationNode(t,Math.max(24,width/2F-LEFT),80+editing.nodes.size()*18F);editing.nodes.add(n);selected=n;inspectorScroll=inspectorTarget=0;return true;}py+=43;}
 		for(int i=editing.nodes.size()-1;i>=0;i--){AutomationNode n=editing.nodes.get(i);Box b=nodeBox(n);if(button==GLFW.GLFW_MOUSE_BUTTON_RIGHT&&b.has(mx,my)&&n.type!=AutomationNodeType.START){selected=n;removeSelected();return true;}if(button!=GLFW.GLFW_MOUSE_BUTTON_LEFT)continue;

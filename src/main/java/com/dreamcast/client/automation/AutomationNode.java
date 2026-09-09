@@ -41,6 +41,7 @@ public final class AutomationNode {
 			case SEARCH -> values.put("block", "minecraft:chest");
 			case OPEN -> {
 				values.put("x", "${player.x}"); values.put("y", "${player.y}"); values.put("z", "${player.z}");
+				values.put("require_sign", "false"); values.put("sign_text", "");
 			}
 			case USE -> { values.put("slot", "1"); values.put("hand", "main"); }
 			case FOLLOW -> { values.put("entity", "player"); values.put("name", ""); }

@@ -15,6 +15,12 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.SignBlock;
+import net.minecraft.world.level.block.WallHangingSignBlock;
+import net.minecraft.world.level.block.WallSignBlock;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -504,7 +510,9 @@ public final class AutomationRunner {
 		Minecraft client = Minecraft.getInstance();
 		if (client.player == null || client.gameMode == null) { fail("Игрок недоступен"); return; }
 		int x=(int)number(resolve(current.value("x"))), y=(int)number(resolve(current.value("y"))), z=(int)number(resolve(current.value("z")));
+		BlockPos targetPos = new BlockPos(x, y, z);
 		if (!dispatched) {
+			if (!validateOpenSign(client, targetPos)) return;
 			dispatched=true; enteredAt=System.currentTimeMillis(); status="Подхожу к блоку";
 			if(!BaritoneBridge.goal(x,y,z,false)) fail("Baritone не принял маршрут");
 			return;
@@ -518,8 +526,61 @@ public final class AutomationRunner {
 			client.player.setYRot(client.player.getYRot()+clamp(yd,-ROTATION_SPEED,ROTATION_SPEED));client.player.setXRot(client.player.getXRot()+clamp(pd,-ROTATION_SPEED,ROTATION_SPEED));
 			if(Math.abs(yd)>2||Math.abs(pd)>2){status="Плавно навожусь";return;}
 		}else{client.player.setYRot(yaw);client.player.setXRot(pitch);}
-		BlockPos pos=new BlockPos(x,y,z);BlockHitResult hit=new BlockHitResult(target,Direction.UP,pos,false);
+		BlockHitResult hit=new BlockHitResult(target,Direction.UP,targetPos,false);
 		client.gameMode.useItemOn(client.player,InteractionHand.MAIN_HAND,hit);next("next");
+	}
+
+	private static boolean validateOpenSign(Minecraft client, BlockPos target) {
+		if (!Boolean.parseBoolean(current.value("require_sign"))) return true;
+		String expected = resolve(current.value("sign_text")).trim();
+		if (expected.isEmpty()) {
+			fail("Для фильтра таблички укажите текст");
+			return false;
+		}
+		if (client.level == null || !(client.level.getBlockState(target).getBlock() instanceof ChestBlock)) {
+			fail("Цель с фильтром таблички не является сундуком");
+			return false;
+		}
+		if (!hasAttachedSignWithText(client, target, expected)) {
+			fail("Рядом с сундуком нет таблички с текстом «" + expected + "»");
+			return false;
+		}
+		return true;
+	}
+
+	private static boolean hasAttachedSignWithText(Minecraft client, BlockPos target, String expected) {
+		for (Direction direction : Direction.values()) {
+			BlockPos signPos = target.relative(direction);
+			var state = client.level.getBlockState(signPos);
+			if (!(state.getBlock() instanceof SignBlock)) continue;
+			boolean attached = signPos.equals(target.above()) || signPos.equals(target.below());
+			if (state.getBlock() instanceof WallSignBlock) {
+				Direction facing = state.getValue(WallSignBlock.FACING);
+				attached = signPos.relative(facing.getOpposite()).equals(target);
+			} else if (state.getBlock() instanceof WallHangingSignBlock) {
+				Direction facing = state.getValue(WallHangingSignBlock.FACING);
+				attached = signPos.relative(facing.getOpposite()).equals(target);
+			}
+			if (!attached) continue;
+			if (client.level.getBlockEntity(signPos) instanceof SignBlockEntity sign && signMatches(sign, expected)) return true;
+		}
+		return false;
+	}
+
+	private static boolean signMatches(SignBlockEntity sign, String expected) {
+		String wanted = expected.toLowerCase(Locale.ROOT);
+		for (boolean front : new boolean[]{true, false}) {
+			SignText text = sign.getText(front);
+			for (boolean filtered : new boolean[]{false, true}) {
+				StringBuilder lines = new StringBuilder();
+				for (var line : text.getMessages(filtered)) {
+					if (!lines.isEmpty()) lines.append('\n');
+					lines.append(line.getString());
+				}
+				if (lines.toString().toLowerCase(Locale.ROOT).contains(wanted)) return true;
+			}
+		}
+		return false;
 	}
 
 	private static void sendChatMessage() {

@@ -13,6 +13,10 @@ public enum AutomationNodeType {
 	FARM("Фармить", "Автоматически собирать урожай", 0xFF7FD36B),
 	COORDINATE_CHECK("Проверка координат", "Ветка по положению игрока", 0xFFE7C85B),
 	CHAT("Сообщение", "Отправить сообщение в чат", 0xFFAE8CFF),
+	CHAT_SEND("Отправить в чат", "Отправить сообщение игрокам", 0xFFB28CFF),
+	CHAT_COMMAND("Команда чата", "Отправить slash-команду", 0xFF9F86FF),
+	CHAT_WAIT("Ждать чат", "Ждать входящее сообщение", 0xFFBC9CFF),
+	CHAT_CHECK("Проверка чата", "Ветка по входящему сообщению", 0xFFD0AEFF),
 	SELECT_SLOT("Выбрать слот", "Переключить слот хотбара", 0xFF60C5F1),
 	MOVE_ITEM("Переместить предмет", "Перенести между слотами меню", 0xFF4FC7A5),
 	QUICK_MOVE("Быстро переместить", "Shift-клик по слоту", 0xFF62D6B0),
@@ -67,12 +71,12 @@ public enum AutomationNodeType {
 			case SELECT_SLOT, USE, MOVE_ITEM, QUICK_MOVE, DROP_ITEM, TAKE_CONTAINER, EAT -> Category.INVENTORY;
 			case CONDITION, COORDINATE_CHECK, FOOD_CHECK, HEALTH_CHECK, ITEM_CHECK, CONTAINER_CHECK, PLAYER_COUNT_CHECK -> Category.CHECKS;
 			case LOOK, MOVE, JUMP, SNEAK, ATTACK, INTERACT -> Category.CONTROL;
-			case CHAT, WAIT, SET_VARIABLE, START, STOP, PARALLEL, SET_FLAG, WAIT_FLAG, PLAYBACK -> Category.MISC;
+			case CHAT, CHAT_SEND, CHAT_COMMAND, CHAT_WAIT, CHAT_CHECK, WAIT, SET_VARIABLE, START, STOP, PARALLEL, SET_FLAG, WAIT_FLAG, PLAYBACK -> Category.MISC;
 		};
 	}
 	public boolean branching() {
 		return this == CONDITION || this == COORDINATE_CHECK || this == FOOD_CHECK
 				|| this == HEALTH_CHECK || this == ITEM_CHECK || this == CONTAINER_CHECK
-				|| this == PLAYER_COUNT_CHECK || this == PARALLEL;
+				|| this == PLAYER_COUNT_CHECK || this == CHAT_WAIT || this == CHAT_CHECK || this == PARALLEL;
 	}
 }

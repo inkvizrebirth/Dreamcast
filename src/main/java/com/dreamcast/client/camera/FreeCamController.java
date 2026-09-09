@@ -34,6 +34,7 @@ public final class FreeCamController {
 		Minecraft client = Minecraft.getInstance();
 		LocalPlayer player = client.player;
 		if (player == null) return;
+		FreeLookController.getInstance().deactivate();
 		RegionManager manager = RegionManager.getInstance();
 		freeCamX = player.getX();
 		freeCamZ = player.getZ();

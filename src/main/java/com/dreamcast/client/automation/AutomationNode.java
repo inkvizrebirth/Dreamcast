@@ -51,6 +51,13 @@ public final class AutomationNode {
 				values.put("marker", "");
 			}
 			case CHAT -> values.put("message", "Готово!");
+			case CHAT_SEND -> values.put("message", "Готово!");
+			case CHAT_COMMAND -> values.put("command", "spawnpoint");
+			case CHAT_WAIT, CHAT_CHECK -> {
+				values.put("pattern", "готово");
+				values.put("mode", "contains");
+				if (type == AutomationNodeType.CHAT_WAIT) values.put("timeout", "30");
+			}
 			case SELECT_SLOT -> values.put("slot", "1");
 			case MOVE_ITEM -> { values.put("from", "0"); values.put("to", "1"); }
 			case QUICK_MOVE -> values.put("slot", "0");

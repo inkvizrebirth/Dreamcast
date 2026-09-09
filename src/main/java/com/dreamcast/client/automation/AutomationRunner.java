@@ -161,11 +161,10 @@ public final class AutomationRunner {
 			case COORDINATE_CHECK -> next(testCoordinate() ? "true" : "false");
 			case CONTAINER_CHECK -> next(testContainer() ? "true" : "false");
 			case PLAYER_COUNT_CHECK -> next(testPlayerCount() ? "true" : "false");
-			case CHAT -> {
-				Minecraft client = Minecraft.getInstance();
-				if (client.getConnection() == null) fail("Нет подключения к миру");
-				else { client.getConnection().sendChat(resolve(current.value("message"))); next("next"); }
-			}
+			case CHAT, CHAT_SEND -> sendChatMessage();
+			case CHAT_COMMAND -> sendChatCommand();
+			case CHAT_WAIT -> waitForChat();
+			case CHAT_CHECK -> next(ChatMessageBus.getInstance().hasRecentMatch(resolve(current.value("pattern")), current.value("mode")) ? "true" : "false");
 			case SELECT_SLOT -> { selectSlot(); next("next"); }
 			case MOVE_ITEM -> moveItem();
 			case QUICK_MOVE -> { containerClick("quick"); next("next"); }
@@ -451,6 +450,54 @@ public final class AutomationRunner {
 		}else{client.player.setYRot(yaw);client.player.setXRot(pitch);}
 		BlockPos pos=new BlockPos(x,y,z);BlockHitResult hit=new BlockHitResult(target,Direction.UP,pos,false);
 		client.gameMode.useItemOn(client.player,InteractionHand.MAIN_HAND,hit);next("next");
+	}
+
+	private static void sendChatMessage() {
+		Minecraft client = Minecraft.getInstance();
+		if (client.getConnection() == null) {
+			fail("Нет подключения к миру");
+			return;
+		}
+		if (!dispatched) {
+			dispatched = true;
+			client.getConnection().sendChat(resolve(current.value("message")));
+			next("next");
+		}
+	}
+
+	private static void sendChatCommand() {
+		Minecraft client = Minecraft.getInstance();
+		if (client.getConnection() == null) {
+			fail("Нет подключения к миру");
+			return;
+		}
+		if (!dispatched) {
+			dispatched = true;
+			String command = resolve(current.value("command")).trim();
+			if (command.startsWith("/")) command = command.substring(1);
+			if (command.isBlank()) fail("Пустая команда чата");
+			else {
+				client.getConnection().sendCommand(command);
+				next("next");
+			}
+		}
+	}
+
+	private static void waitForChat() {
+		String pattern = resolve(current.value("pattern"));
+		String mode = current.value("mode");
+		if (!dispatched) {
+			dispatched = true;
+			scratch = ChatMessageBus.getInstance().latestSequence();
+		}
+		long after = scratch instanceof Number number ? number.longValue() : 0L;
+		if (ChatMessageBus.getInstance().hasMatchSince(pattern, after, mode)) {
+			next("true");
+			return;
+		}
+		long timeoutMillis = Math.max(0L, Math.round(number(resolve(current.value("timeout"))) * 1000.0D));
+		status = "Жду чат: " + pattern;
+		if (timeoutMillis > 0L && System.currentTimeMillis() - enteredAt >= timeoutMillis) next("false");
 	}
 
 	private static boolean testCoordinate() {

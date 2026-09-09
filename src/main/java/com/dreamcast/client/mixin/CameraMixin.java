@@ -1,6 +1,7 @@
 package com.dreamcast.client.mixin;
 
 import com.dreamcast.client.camera.FreeCamController;
+import com.dreamcast.client.camera.FreeLookController;
 import com.dreamcast.client.region.RegionManager;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
@@ -24,5 +25,12 @@ public final class CameraMixin {
 		accessor.dreamcast$setPosition(pos.x, pos.y, pos.z);
 		accessor.dreamcast$setRotation(TOP_DOWN_PITCH, FIXED_YAW);
 		ci.cancel();
+		return;
+	}
+
+	@Inject(method = "update", at = @At("TAIL"))
+	private void dreamcast$updateFreeLook(DeltaTracker deltaTracker, CallbackInfo ci) {
+		if (!FreeLookController.getInstance().isActive()) return;
+		FreeLookController.getInstance().applyCamera((Camera) (Object) this);
 	}
 }

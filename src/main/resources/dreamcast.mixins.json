@@ -5,11 +5,13 @@
 	"client": [
 		"CameraAccessor",
 		"CameraMixin",
+		"ChatListenerMixin",
 		"DreamcastGuiMixin",
 		"ExternalButtonMixin",
 		"ExternalEditBoxMixin",
 		"FreeCamInteractionMixin",
 		"FreeCamPacketMixin",
+		"FreeLookMouseMixin",
 		"ExternalSliderMixin",
 		"ExternalTabButtonMixin",
 		"ExternalWidgetMixin",

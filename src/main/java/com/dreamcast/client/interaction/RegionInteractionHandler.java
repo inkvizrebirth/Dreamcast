@@ -22,6 +22,7 @@ import java.util.Optional;
 @Environment(EnvType.CLIENT)
 public final class RegionInteractionHandler implements HudElement {
 	private static final double RAYCAST_DISTANCE = 64.0D;
+	private volatile Optional<BlockPos> cachedRaycast = Optional.empty();
 
 	/** Registers the client-tick click handler. */
 	public void register() {
@@ -30,7 +31,13 @@ public final class RegionInteractionHandler implements HudElement {
 
 	private void tick(Minecraft client) {
 		RegionManager manager = RegionManager.getInstance();
-		if (!manager.freeCamActive || client.level == null || client.gui.screen() != null) return;
+		if (!manager.freeCamActive || client.level == null || client.gui.screen() != null) {
+			cachedRaycast = Optional.empty();
+			return;
+		}
+		// Camera movement is tick-based, so one raycast per client tick is enough.
+		// The HUD renderer reads this immutable result instead of touching the world.
+		cachedRaycast = raycastNow(client);
 		if (manager.addCornerMode) {
 			if (client.options.keyAttack.consumeClick()) raycast().ifPresent(manager::addCorner);
 			if (client.options.keyUse.consumeClick()) manager.removeLastCorner();
@@ -45,8 +52,10 @@ public final class RegionInteractionHandler implements HudElement {
 	 * @return hit block position when a block is targeted
 	 */
 	public Optional<BlockPos> raycast() {
-		Minecraft client = Minecraft.getInstance();
-		if (client.level == null) return Optional.empty();
+		return cachedRaycast;
+	}
+
+	private Optional<BlockPos> raycastNow(Minecraft client) {
 		Vec3 from = FreeCamController.getInstance().position();
 		HitResult result = client.level.clip(new ClipContext(from, from.add(0.0D, -RAYCAST_DISTANCE, 0.0D), ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, (net.minecraft.world.entity.Entity) null));
 		return result instanceof BlockHitResult block && result.getType() == HitResult.Type.BLOCK ? Optional.of(block.getBlockPos().immutable()) : Optional.empty();

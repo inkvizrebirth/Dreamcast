@@ -188,7 +188,14 @@ public final class RegionManager {
 
 	/** Schedules a non-blocking save of a consistent state snapshot. */
 	public void saveToFile() {
-		requestSave();
+		long snapshotRevision = revision.incrementAndGet();
+		// This method runs on the client thread. Never hand the live collections to
+		// the background writer: Gson may iterate them after the next game tick.
+		RegionFile snapshot = new RegionFile(
+				List.copyOf(regionCorners),
+				variableMarkers.stream().map(MarkerFile::new)
+						.sorted(Comparator.comparing(marker -> marker.name)).toList());
+		CompletableFuture.runAsync(() -> writeSnapshot(snapshotRevision, snapshot));
 	}
 
 	/** Loads saved polygon state. Invalid files leave the current state unchanged. */
@@ -216,10 +223,7 @@ public final class RegionManager {
 	}
 
 	private void requestSave() {
-		long snapshotRevision = revision.incrementAndGet();
-		RegionFile snapshot = new RegionFile(List.copyOf(regionCorners), variableMarkers.stream()
-				.map(MarkerFile::new).sorted(Comparator.comparing(marker -> marker.name)).toList());
-		CompletableFuture.runAsync(() -> writeSnapshot(snapshotRevision, snapshot));
+		saveToFile();
 	}
 
 	private void writeSnapshot(long snapshotRevision, RegionFile snapshot) {

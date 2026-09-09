@@ -59,6 +59,7 @@ public final class AutomationNode {
 				if (type == AutomationNodeType.CHAT_WAIT) values.put("timeout", "30");
 			}
 			case SELECT_SLOT -> values.put("slot", "1");
+			case PICKUP -> values.put("item", "any");
 			case MOVE_ITEM -> { values.put("from", "0"); values.put("to", "1"); }
 			case QUICK_MOVE -> values.put("slot", "0");
 			case DROP_ITEM -> { values.put("slot", "0"); values.put("amount", "stack"); }
@@ -70,7 +71,7 @@ public final class AutomationNode {
 			case CONTAINER_CHECK -> values.put("state", "open");
 			case PLAYER_COUNT_CHECK -> { values.put("radius", "16"); values.put("operator", ">="); values.put("value", "1"); }
 			case LOOK -> { values.put("mode", "angles"); values.put("yaw", "0"); values.put("pitch", "0"); values.put("x", "0"); values.put("y", "64"); values.put("z", "0"); }
-			case MOVE -> { values.put("direction", "forward"); values.put("seconds", "1"); }
+			case MOVE -> { values.put("direction", "forward"); values.put("seconds", "1"); values.put("parkour", "false"); }
 			case SNEAK -> values.put("seconds", "1");
 			case ATTACK -> values.put("swings", "1");
 			case INTERACT -> values.put("hand", "main");

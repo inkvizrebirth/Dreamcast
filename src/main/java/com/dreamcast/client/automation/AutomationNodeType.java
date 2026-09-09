@@ -18,6 +18,7 @@ public enum AutomationNodeType {
 	CHAT_WAIT("Ждать чат", "Ждать входящее сообщение", 0xFFBC9CFF),
 	CHAT_CHECK("Проверка чата", "Ветка по входящему сообщению", 0xFFD0AEFF),
 	SELECT_SLOT("Выбрать слот", "Переключить слот хотбара", 0xFF60C5F1),
+	PICKUP("Подобрать", "Baritone: подобрать предметы с земли", 0xFF6FE0C2),
 	MOVE_ITEM("Переместить предмет", "Перенести между слотами меню", 0xFF4FC7A5),
 	QUICK_MOVE("Быстро переместить", "Shift-клик по слоту", 0xFF62D6B0),
 	DROP_ITEM("Выбросить предмет", "Выбросить один предмет или стак", 0xFFFF7A7A),
@@ -68,7 +69,7 @@ public enum AutomationNodeType {
 	public Category category() {
 		return switch (this) {
 			case GOTO, MINE, SEARCH, OPEN, FOLLOW, EXPLORE, FARM, COMMAND -> Category.NAVIGATION;
-			case SELECT_SLOT, USE, MOVE_ITEM, QUICK_MOVE, DROP_ITEM, TAKE_CONTAINER, EAT -> Category.INVENTORY;
+			case SELECT_SLOT, PICKUP, USE, MOVE_ITEM, QUICK_MOVE, DROP_ITEM, TAKE_CONTAINER, EAT -> Category.INVENTORY;
 			case CONDITION, COORDINATE_CHECK, FOOD_CHECK, HEALTH_CHECK, ITEM_CHECK, CONTAINER_CHECK, PLAYER_COUNT_CHECK -> Category.CHECKS;
 			case LOOK, MOVE, JUMP, SNEAK, ATTACK, INTERACT -> Category.CONTROL;
 			case CHAT, CHAT_SEND, CHAT_COMMAND, CHAT_WAIT, CHAT_CHECK, WAIT, SET_VARIABLE, START, STOP, PARALLEL, SET_FLAG, WAIT_FLAG, PLAYBACK -> Category.MISC;

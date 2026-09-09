@@ -167,6 +167,42 @@ public final class BaritoneBridge {
 		}
 	}
 
+	/**
+	 * Enables the complete Baritone parkour movement set for a movement node.
+	 * The reflective writes are deliberately tolerant of Baritone forks that do
+	 * not expose one of the optional diagonal movement settings.
+	 *
+	 * @param enabled whether parkour and diagonal jump transitions are allowed
+	 */
+	public static void configureParkour(boolean enabled) {
+		try {
+			Class<?> api = classFor(API_CLASS);
+			Object settings = api == null ? null : invokeStatic(api, "getSettings");
+			if (settings == null) return;
+			setSetting(settings, "allowParkour", enabled);
+			setSetting(settings, "allowParkourPlace", enabled);
+			setSetting(settings, "allowParkourAscend", enabled);
+			setSetting(settings, "allowDiagonalAscend", enabled);
+			setSetting(settings, "allowDiagonalDescend", enabled);
+			setSetting(settings, "allowDownward", enabled);
+			setSetting(settings, "sprintAscends", enabled);
+		} catch (ReflectiveOperationException | RuntimeException error) {
+			DreamcastClient.LOGGER.warn("Не удалось применить режим паркура Baritone", error);
+		}
+	}
+
+	/**
+	 * Starts Baritone's item pickup process.
+	 *
+	 * @param item item id, or {@code any} for all nearby dropped items
+	 * @return true when the command was accepted
+	 */
+	public static boolean pickup(String item) {
+		String normalized = item == null ? "" : item.trim();
+		return command(normalized.isEmpty() || "any".equalsIgnoreCase(normalized)
+				? "pickup" : "pickup " + normalized);
+	}
+
 	private static void setSetting(Object settings, String name, Object value) throws ReflectiveOperationException {
 		try {
 			Object setting = settings.getClass().getField(name).get(settings);

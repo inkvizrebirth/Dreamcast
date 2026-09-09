@@ -166,6 +166,7 @@ public final class AutomationRunner {
 			case CHAT_WAIT -> waitForChat();
 			case CHAT_CHECK -> next(ChatMessageBus.getInstance().hasRecentMatch(resolve(current.value("pattern")), current.value("mode")) ? "true" : "false");
 			case SELECT_SLOT -> { selectSlot(); next("next"); }
+			case PICKUP -> runPickup();
 			case MOVE_ITEM -> moveItem();
 			case QUICK_MOVE -> { containerClick("quick"); next("next"); }
 			case DROP_ITEM -> { containerClick("drop"); next("next"); }
@@ -175,7 +176,10 @@ public final class AutomationRunner {
 			case HEALTH_CHECK -> next(testHealth() ? "true" : "false");
 			case ITEM_CHECK -> next(hasItem() ? "true" : "false");
 			case LOOK -> look();
-			case MOVE -> holdMovement(false);
+			case MOVE -> {
+				if (Boolean.parseBoolean(current.value("parkour"))) runParkourMovement();
+				else holdMovement(false);
+			}
 			case SNEAK -> holdMovement(true);
 			case JUMP -> { Minecraft.getInstance().player.jumpFromGround(); next("next"); }
 			case ATTACK -> attack();
@@ -283,6 +287,18 @@ public final class AutomationRunner {
 		if(c.player.isUsingItem())return;if(Boolean.parseBoolean(current.value("restore_slot"))&&previousSlot>=0)c.player.getInventory().setSelectedSlot(previousSlot);previousSlot=-1;next("next");
 	}
 
+	private static void runPickup() {
+		if (!dispatched) {
+			dispatched = true;
+			enteredAt = System.currentTimeMillis();
+			String item = resolve(current.value("item")).trim();
+			status = "Подбираю " + (item.isBlank() || "any".equalsIgnoreCase(item) ? "предметы" : item);
+			if (!BaritoneBridge.pickup(item)) fail("Baritone не начал подбор предметов");
+			return;
+		}
+		if (System.currentTimeMillis() - enteredAt > 600L && !BaritoneBridge.isPathing()) next("next");
+	}
+
 	private static boolean hasItem() {
 		Minecraft c=Minecraft.getInstance();requirePlayer(c);String wanted=resolve(current.value("item"));int need=Math.max(1,(int)number(resolve(current.value("count")))),found=0;
 		for(ItemStack stack:c.player.getInventory().getNonEquipmentItems()){if(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString().equals(wanted))found+=stack.getCount();}return found>=need;
@@ -308,6 +324,59 @@ public final class AutomationRunner {
 		long ms=Math.max(0,Math.round(number(resolve(current.value("seconds")))*1000));if(System.currentTimeMillis()-enteredAt>=ms){releaseHeld();next("next");}
 	}
 
+	private static void runParkourMovement() {
+		Minecraft client = Minecraft.getInstance();
+		requirePlayer(client);
+		if (!(scratch instanceof BlockPos)) scratch = parkourTarget(client);
+		if (!dispatched) {
+			dispatched = true;
+			enteredAt = System.currentTimeMillis();
+			status = "Паркурю через Baritone";
+			BaritoneBridge.configureParkour(true);
+			BlockPos target = (BlockPos) scratch;
+			if (!BaritoneBridge.goal(target.getX(), target.getY(), target.getZ(), false)) {
+				BaritoneBridge.configureParkour(false);
+				fail("Baritone не начал паркур");
+			}
+			return;
+		}
+		if (System.currentTimeMillis() - enteredAt > 600L && !BaritoneBridge.isPathing()) {
+			BaritoneBridge.configureParkour(false);
+			next("next");
+		}
+	}
+
+	private static BlockPos parkourTarget(Minecraft client) {
+		double seconds = Math.max(0.25D, Math.min(30.0D, number(resolve(current.value("seconds")))));
+		double distance = Math.max(2.0D, seconds * 4.5D);
+		String direction = resolve(current.value("direction")).toLowerCase(Locale.ROOT)
+				.replace('-', '_').replace(' ', '_');
+		double forward = 0.0D;
+		double right = 0.0D;
+		switch (direction) {
+			case "back", "backward" -> forward = -1.0D;
+			case "left" -> right = -1.0D;
+			case "right" -> right = 1.0D;
+			case "forward_left", "left_45", "45_left", "strafe_left" -> { forward = 1.0D; right = -1.0D; }
+			case "forward_right", "right_45", "45_right", "strafe_right" -> { forward = 1.0D; right = 1.0D; }
+			case "back_left" -> { forward = -1.0D; right = -1.0D; }
+			case "back_right" -> { forward = -1.0D; right = 1.0D; }
+			default -> forward = 1.0D;
+		}
+		float yaw = client.player.getYRot();
+		double radians = Math.toRadians(yaw);
+		double forwardX = -Math.sin(radians), forwardZ = Math.cos(radians);
+		double rightX = Math.cos(radians), rightZ = Math.sin(radians);
+		double x = forwardX * forward + rightX * right;
+		double z = forwardZ * forward + rightZ * right;
+		double length = Math.hypot(x, z);
+		if (length < 0.001D) { x = forwardX; z = forwardZ; length = 1.0D; }
+		return new BlockPos(
+				(int) Math.floor(client.player.getX() + x / length * distance),
+				(int) Math.floor(client.player.getY()),
+				(int) Math.floor(client.player.getZ() + z / length * distance));
+	}
+
 	private static void attack() {
 		Minecraft c=Minecraft.getInstance();requirePlayer(c);int wanted=Math.max(1,(int)number(resolve(current.value("swings"))));if(System.currentTimeMillis()-enteredAt<progress*250L)return;Entity target=c.crosshairPickEntity;if(target!=null&&target.isAlive())c.gameMode.attack(c.player,target);c.player.swing(InteractionHand.MAIN_HAND);progress++;if(progress>=wanted)next("next");
 	}
@@ -329,6 +398,7 @@ public final class AutomationRunner {
 	 */
 	private static void cleanupAction(){
 		Minecraft c=Minecraft.getInstance();
+		BaritoneBridge.configureParkour(false);
 		for(Cursor cursor:CURSORS){
 			if(cursor.heldKey!=null){cursor.heldKey.setDown(false);cursor.heldKey=null;}
 			if(cursor.previousSlot>=0&&c!=null&&c.player!=null){c.player.stopUsingItem();c.player.getInventory().setSelectedSlot(cursor.previousSlot);}

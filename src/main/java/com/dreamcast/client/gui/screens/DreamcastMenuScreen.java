@@ -103,6 +103,7 @@ public final class DreamcastMenuScreen extends DreamcastScreen {
 		int accent = ClientTheme.accent(now);
 		DreamcastUi.drawBackdrop(graphics, width, height, mouseX, mouseY, 0.34F);
 		refreshClock(now);
+		drawLogoFeature(graphics, mouseX, mouseY, elapsed, accent);
 
 		float clockIn = DreamcastUi.smootherstep(elapsed / 520.0F);
 		float clockMove = DreamcastUi.smootherstep((elapsed - 1_250L) / 850.0F);
@@ -141,6 +142,40 @@ public final class DreamcastMenuScreen extends DreamcastScreen {
 		RenderUtils.drawClickWaves(graphics, accent);
 	}
 
+	private void drawLogoFeature(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
+	                            long elapsed, int accent) {
+		// On compact GUI scales the navigation needs all available width; keep the
+		// mark as a wide-screen brand element instead of letting it collide with it.
+		if (width < 900) {
+			return;
+		}
+
+		float appear = DreamcastUi.smootherstep((elapsed - 620L) / 820.0F);
+		if (appear <= 0.002F) {
+			return;
+		}
+		int size = Math.max(104, Math.min(220, Math.min(width, height) / 4));
+		int margin = Math.max(42, width / 18);
+		int centerX = width - margin - size / 2;
+		int centerY = Math.max(size / 2 + 8, height / 2 - size / 2 - 34);
+		float cursorOffset = (mouseX - width * 0.5F) / Math.max(1.0F, width) * 7.0F;
+		centerX += Math.round(cursorOffset);
+		centerY += Math.round((mouseY - height * 0.5F) / Math.max(1.0F, height) * 4.0F);
+
+		float pulse = 0.5F + 0.5F * (float) Math.sin(Util.getMillis() / 1_400.0F);
+		RenderUtils.fillCircle(graphics, centerX, centerY, size * 0.46F,
+				RenderUtils.withAlpha(accent, (0.035F + pulse * 0.025F) * appear));
+		RenderUtils.fillCircle(graphics, centerX, centerY, size * 0.30F,
+				RenderUtils.withAlpha(0xFF0A1024, 0.20F * appear));
+		DreamcastUi.drawLogo(graphics, centerX, centerY, size, 0.92F * appear);
+
+		String label = "AUTOMATION CORE";
+		RenderUtils.drawTracked(graphics, font, label,
+				centerX - RenderUtils.trackedWidth(font, label, 2) / 2,
+				centerY + size / 2 + 10,
+				RenderUtils.withAlpha(DreamcastUi.TEXT_SECONDARY, 0.72F * appear), 2);
+	}
+
 	private void drawNavigation(GuiGraphicsExtractor graphics, int mouseX, int mouseY, long elapsed) {
 		int count = actions.size();
 		// Four columns also fit Minecraft's 320px minimum GUI width and keep
@@ -173,11 +208,42 @@ public final class DreamcastMenuScreen extends DreamcastScreen {
 				float near = DreamcastUi.clamp01(1.0F - (distance - radius) / 38.0F);
 				float targetHover = distance <= radius ? 1.0F : near * 0.42F;
 				action.hover = ease(action.hover, targetHover, 0.20F);
-				int actionAccent = RenderUtils.mix(DreamcastUi.VIOLET, DreamcastUi.CYAN,
-						index / (float) Math.max(1, count - 1));
-				DreamcastUi.drawRoundButton(graphics, font, action.centerX, action.centerY, radius,
-						action.icon, action.label, actionAccent, action.hover, action.appear,
-						index == keyboardFocus);
+			}
+		}
+
+		drawNavigationRails(graphics, columns, rows, count, elapsed);
+		int firstAccent = ClientTheme.first();
+		int secondAccent = ClientTheme.second();
+		for (int index = 0; index < count; index++) {
+			RoundAction action = actions.get(index);
+			int actionAccent = RenderUtils.mix(firstAccent, secondAccent,
+					index / (float) Math.max(1, count - 1));
+			DreamcastUi.drawRoundButton(graphics, font, action.centerX, action.centerY, radius,
+					action.icon, action.label, actionAccent, action.hover, action.appear,
+					index == keyboardFocus);
+		}
+	}
+
+	private void drawNavigationRails(GuiGraphicsExtractor graphics, int columns, int rows,
+	                                 int count, long elapsed) {
+		float appear = DreamcastUi.smootherstep((elapsed - 1_410L) / 520.0F);
+		if (appear <= 0.002F) {
+			return;
+		}
+		int railColor = RenderUtils.withAlpha(ClientTheme.accent(), 0.20F * appear);
+		for (int row = 0; row < rows; row++) {
+			int first = row * columns;
+			int inRow = Math.min(columns, count - first);
+			if (inRow < 2) {
+				continue;
+			}
+			RoundAction start = actions.get(first);
+			RoundAction end = actions.get(first + inRow - 1);
+			graphics.fill(start.centerX, start.centerY, end.centerX + 1, end.centerY + 1, railColor);
+			for (int index = first; index < first + inRow; index++) {
+				RoundAction action = actions.get(index);
+				RenderUtils.fillCircle(graphics, action.centerX, action.centerY, 2.0F,
+						RenderUtils.withAlpha(0xFFFFFFFF, 0.34F * appear));
 			}
 		}
 	}

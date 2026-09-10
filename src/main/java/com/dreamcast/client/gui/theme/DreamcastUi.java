@@ -33,8 +33,12 @@ public final class DreamcastUi {
 
 	private static final Identifier BACKGROUND = Identifier.fromNamespaceAndPath(
 			DreamcastClient.MOD_ID, "textures/gui/main_menu_background.png");
+	private static final Identifier LOGO = Identifier.fromNamespaceAndPath(
+			DreamcastClient.MOD_ID, "textures/gui/dreamcast-logo.png");
 	private static final int BACKGROUND_WIDTH = 1920;
 	private static final int BACKGROUND_HEIGHT = 1080;
+	private static final int LOGO_WIDTH = 1254;
+	private static final int LOGO_HEIGHT = 1254;
 
 	public enum Icon {
 		WORLD,
@@ -113,6 +117,21 @@ public final class DreamcastUi {
 			float glow = 0.12F + 0.18F * (1.0F - Math.min(1.0F, cursorDistance / 120.0F));
 			graphics.fill(x, y, x + size, y + size, RenderUtils.withAlpha(accent, glow));
 		}
+	}
+
+	/** Draws the transparent Dreamcast mark with a controllable fade. */
+	public static void drawLogo(GuiGraphicsExtractor graphics, int centerX, int centerY,
+	                            int size, float alpha) {
+		if (size <= 0 || alpha <= 0.0F) {
+			return;
+		}
+		int safeSize = Math.max(1, size);
+		int x = centerX - safeSize / 2;
+		int y = centerY - safeSize / 2;
+		graphics.blit(RenderPipelines.GUI_TEXTURED, LOGO,
+				x, y, 0.0F, 0.0F, safeSize, safeSize,
+				LOGO_WIDTH, LOGO_HEIGHT, LOGO_WIDTH, LOGO_HEIGHT,
+				RenderUtils.withAlpha(0xFFFFFFFF, clamp01(alpha)));
 	}
 
 	public static void drawPageTitle(GuiGraphicsExtractor graphics, Font font, String title,

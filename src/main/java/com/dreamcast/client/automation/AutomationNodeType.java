@@ -36,6 +36,7 @@ public enum AutomationNodeType {
 	ATTACK("Ударить", "Атаковать цель под прицелом", 0xFFFF6575),
 	INTERACT("Взаимодействовать", "Правый клик по цели под прицелом", 0xFF7DDC91),
 	WAIT("Ожидание", "Пауза перед следующим действием", 0xFFB38CFF),
+	TIMER("Таймер", "Ждать заданное число секунд", 0xFFC58CFF),
 	COMMAND("Команда", "Любая команда Baritone", 0xFF55D6E8),
 	SET_VARIABLE("Переменная", "Записать значение", 0xFFFF7CAC),
 	CONDITION("Условие", "Ветка Да / Нет", 0xFFFFD166),
@@ -72,7 +73,7 @@ public enum AutomationNodeType {
 			case SELECT_SLOT, PICKUP, USE, MOVE_ITEM, QUICK_MOVE, DROP_ITEM, TAKE_CONTAINER, EAT -> Category.INVENTORY;
 			case CONDITION, COORDINATE_CHECK, FOOD_CHECK, HEALTH_CHECK, ITEM_CHECK, CONTAINER_CHECK, PLAYER_COUNT_CHECK -> Category.CHECKS;
 			case LOOK, MOVE, JUMP, SNEAK, ATTACK, INTERACT -> Category.CONTROL;
-			case CHAT, CHAT_SEND, CHAT_COMMAND, CHAT_WAIT, CHAT_CHECK, WAIT, SET_VARIABLE, START, STOP, PARALLEL, SET_FLAG, WAIT_FLAG, PLAYBACK -> Category.MISC;
+			case CHAT, CHAT_SEND, CHAT_COMMAND, CHAT_WAIT, CHAT_CHECK, WAIT, TIMER, SET_VARIABLE, START, STOP, PARALLEL, SET_FLAG, WAIT_FLAG, PLAYBACK -> Category.MISC;
 		};
 	}
 	public boolean branching() {

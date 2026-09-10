@@ -27,12 +27,15 @@ public final class AutomationNode {
 	private void applyDefaults() {
 		switch (type) {
 			case GOTO -> {
+				values.put("coordinate_mode", "manual");
 				values.put("x", "${player.x}");
 				values.put("y", "${player.y}");
 				values.put("z", "${player.z}");
 				values.put("sprint", "");
 				values.put("path", "straight");
-				values.put("coordinate_mode", "manual"); values.put("marker", "");
+				values.put("marker", "");
+				values.put("parkour", "false");
+				values.put("parkour_profile", "balanced");
 			}
 			case MINE -> {
 				values.put("block", "minecraft:diamond_ore");
@@ -72,11 +75,18 @@ public final class AutomationNode {
 			case CONTAINER_CHECK -> values.put("state", "open");
 			case PLAYER_COUNT_CHECK -> { values.put("radius", "16"); values.put("operator", ">="); values.put("value", "1"); }
 			case LOOK -> { values.put("mode", "angles"); values.put("yaw", "0"); values.put("pitch", "0"); values.put("x", "0"); values.put("y", "64"); values.put("z", "0"); }
-			case MOVE -> { values.put("direction", "forward"); values.put("seconds", "1"); values.put("parkour", "false"); }
+			case MOVE -> {
+				values.put("destination_mode", "direction");
+				values.put("direction", "forward"); values.put("seconds", "1");
+				values.put("x", "${player.x}"); values.put("y", "${player.y}"); values.put("z", "${player.z}");
+				values.put("marker", ""); values.put("sprint", "sprint,jump");
+				values.put("parkour", "false"); values.put("parkour_profile", "balanced");
+			}
 			case SNEAK -> values.put("seconds", "1");
 			case ATTACK -> values.put("swings", "1");
 			case INTERACT -> values.put("hand", "main");
 			case WAIT -> values.put("seconds", "1");
+			case TIMER -> values.put("seconds", "5");
 			case COMMAND -> values.put("command", "#goto 0 64 0");
 			case SET_VARIABLE -> {
 				values.put("name", "my_value");

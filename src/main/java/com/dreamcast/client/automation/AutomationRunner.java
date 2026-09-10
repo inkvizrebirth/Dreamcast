@@ -67,6 +67,8 @@ public final class AutomationRunner {
 	private static long enteredAt;
 	private static boolean dispatched;
 	private static KeyMapping heldKey;
+	private static boolean heldSprint;
+	private static boolean heldJump;
 	private static int progress;
 	private static int previousSlot = -1;
 	private static Object scratch;
@@ -151,9 +153,9 @@ public final class AutomationRunner {
 				next("next");
 			}
 			case CONDITION -> next(testCondition() ? "true" : "false");
-			case WAIT -> {
+			case WAIT, TIMER -> {
 				long duration = Math.max(0L, Math.round(number(resolve(current.value("seconds"))) * 1000.0));
-				status = "Ожидание " + current.value("seconds") + " сек.";
+				status = (current.type == AutomationNodeType.TIMER ? "Таймер: " : "Ожидание ") + current.value("seconds") + " сек.";
 				if (System.currentTimeMillis() - enteredAt >= duration) next("next");
 			}
 			case GOTO -> runGoto();
@@ -183,7 +185,8 @@ public final class AutomationRunner {
 			case ITEM_CHECK -> next(hasItem() ? "true" : "false");
 			case LOOK -> look();
 			case MOVE -> {
-				if (Boolean.parseBoolean(current.value("parkour"))) runParkourMovement();
+				if (!"direction".equalsIgnoreCase(current.value("destination_mode"))) runGoto();
+				else if (Boolean.parseBoolean(current.value("parkour"))) runParkourMovement();
 				else holdMovement(false);
 			}
 			case SNEAK -> holdMovement(true);
@@ -326,7 +329,14 @@ public final class AutomationRunner {
 	}
 
 	private static void holdMovement(boolean sneak) {
-		Minecraft c=Minecraft.getInstance();requirePlayer(c);if(!dispatched){heldKey=sneak?c.options.keyShift:switch(current.value("direction").toLowerCase(Locale.ROOT)){case"back","backward"->c.options.keyDown;case"left"->c.options.keyLeft;case"right"->c.options.keyRight;default->c.options.keyUp;};heldKey.setDown(true);dispatched=true;enteredAt=System.currentTimeMillis();}
+		Minecraft c=Minecraft.getInstance();requirePlayer(c);if(!dispatched){
+			heldKey=sneak?c.options.keyShift:switch(current.value("direction").toLowerCase(Locale.ROOT)){case"back","backward"->c.options.keyDown;case"left"->c.options.keyLeft;case"right"->c.options.keyRight;default->c.options.keyUp;};
+			heldKey.setDown(true);
+			heldSprint=!sneak&&current.value("sprint").contains("sprint");
+			heldJump=!sneak&&current.value("sprint").contains("jump");
+			if(heldSprint)c.options.keySprint.setDown(true);
+			if(heldJump)c.options.keyJump.setDown(true);
+			dispatched=true;enteredAt=System.currentTimeMillis();}
 		long ms=Math.max(0,Math.round(number(resolve(current.value("seconds")))*1000));if(System.currentTimeMillis()-enteredAt>=ms){releaseHeld();next("next");}
 	}
 
@@ -338,7 +348,7 @@ public final class AutomationRunner {
 			dispatched = true;
 			enteredAt = System.currentTimeMillis();
 			status = "Паркурю через Baritone";
-			BaritoneBridge.configureParkour(true);
+			BaritoneBridge.configureParkourProfile(current.value("parkour_profile"));
 			BlockPos target = (BlockPos) scratch;
 			if (!BaritoneBridge.goal(target.getX(), target.getY(), target.getZ(), false)) {
 				BaritoneBridge.configureParkour(false);
@@ -394,7 +404,15 @@ public final class AutomationRunner {
 
 	private static boolean compare(double left,String op,double right){return switch(op){case">"->left>right;case">="->left>=right;case"<"->left<right;case"!="->left!=right;case"=="->left==right;default->left<=right;};}
 	private static void requirePlayer(Minecraft c){if(c==null||c.player==null||c.gameMode==null)throw new IllegalStateException("Игрок недоступен");}
-	private static void releaseHeld(){if(heldKey!=null){heldKey.setDown(false);heldKey=null;}}
+	private static void releaseHeld(){
+		if(heldKey!=null){heldKey.setDown(false);heldKey=null;}
+		Minecraft client=Minecraft.getInstance();
+		if(client!=null&&client.options!=null){
+			if(heldSprint)client.options.keySprint.setDown(false);
+			if(heldJump)client.options.keyJump.setDown(false);
+		}
+		heldSprint=false;heldJump=false;
+	}
 
 	/**
 	 * Releases held keys and restores the pre-EAT hotbar slot for EVERY cursor,
@@ -416,6 +434,11 @@ public final class AutomationRunner {
 
 	private static void runGoto() {
 		BlockPos marker=markerPosition();
+		if (marker == null && ((current.type == AutomationNodeType.GOTO && "variable".equalsIgnoreCase(current.value("coordinate_mode")))
+				|| (current.type == AutomationNodeType.MOVE && "variable".equalsIgnoreCase(current.value("destination_mode"))))) {
+			fail("Выбранная метка не найдена");
+			return;
+		}
 		int x = marker==null?(int)Math.floor(number(resolve(current.value("x")))):marker.getX();
 		int y = marker==null?(int)Math.floor(number(resolve(current.value("y")))):marker.getY();
 		int z = marker==null?(int)Math.floor(number(resolve(current.value("z")))):marker.getZ();
@@ -448,6 +471,7 @@ public final class AutomationRunner {
 	private static void applyMovementSettings() {
 		String raw = current.value("sprint");
 		BaritoneBridge.configureMovement(raw.contains("sprint"), raw.contains("jump"));
+		if (Boolean.parseBoolean(current.value("parkour"))) BaritoneBridge.configureParkourProfile(current.value("parkour_profile"));
 	}
 
 	/** Builds a stable serpentine route once, using the player's position on entry as its origin. */
@@ -638,7 +662,14 @@ public final class AutomationRunner {
 		double expected=number(resolve(current.value("value")));String op=current.value("operator");
 		return switch(op){case">"->actual>expected;case">="->actual>=expected;case"<"->actual<expected;case"<="->actual<=expected;case"!="->actual!=expected;default->Math.abs(actual-expected)<.5;};
 	}
-	private static BlockPos markerPosition(){String name=current==null?"":current.value("marker").trim();if(name.isEmpty())return null;return RegionManager.getInstance().getMarkerByName(name).map(marker->marker.position).orElse(null);}
+	private static BlockPos markerPosition(){
+		if(current==null)return null;
+		if(current.type==AutomationNodeType.GOTO&&!"variable".equalsIgnoreCase(current.value("coordinate_mode")))return null;
+		if(current.type==AutomationNodeType.MOVE&&!"variable".equalsIgnoreCase(current.value("destination_mode")))return null;
+		String name=current.value("marker").trim();
+		if(name.isEmpty())return null;
+		return RegionManager.getInstance().getMarkerByName(name).map(marker->marker.position).orElse(null);
+	}
 
 	private static boolean testFood() {
 		Minecraft client = Minecraft.getInstance();

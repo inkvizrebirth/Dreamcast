@@ -41,8 +41,12 @@ public final class RegionInteractionHandler implements HudElement {
 		if (manager.addCornerMode) {
 			if (client.options.keyAttack.consumeClick()) raycast().ifPresent(manager::addCorner);
 			if (client.options.keyUse.consumeClick()) manager.removeLastCorner();
-		} else if (manager.addMarkerMode && client.options.keyAttack.consumeClick()) {
-			raycast().ifPresent(pos -> client.gui.setScreen(new VariableNameDialog(null, pos)));
+		} else if (manager.addMarkerMode) {
+			// Both mouse buttons are useful while the detached camera is active:
+			// left-click keeps the traditional editor flow, right-click is the
+			// quick marker action exposed by the «+ Добавить метку» selector.
+			boolean click = client.options.keyAttack.consumeClick() || client.options.keyUse.consumeClick();
+			if (click) raycast().ifPresent(pos -> client.gui.setScreen(new VariableNameDialog(null, pos)));
 		}
 	}
 

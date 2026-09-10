@@ -69,25 +69,47 @@ public final class ClickGuiScreen extends Screen {
 		RenderUtils.textFlat(g,font,subtitle,width-20-RenderUtils.width(font,subtitle),27,MUTED);
 	}
 	private void drawLibrary(GuiGraphicsExtractor g,int mx,int my){
-		top(g,"Автоматизатор Baritone");Box add=new Box(20,12,142,25);button(g,add,"+  Добавить конфиг",add.has(mx,my),ACCENT,true);
-		int x=20,y=68,cw=Math.max(260,Math.min(370,(width-60)/2));
+		top(g,"Автоматизатор Baritone");Box add=new Box(20,12,142,25);button(g,add,"+  Новый конфиг",add.has(mx,my),ACCENT,true);
+		int cw=Math.max(260,Math.min(370,(width-60)/2));
+		int y=64;
+		RenderUtils.textBold(g,font,"ПРОФИЛИ BARITONE",20,y,TEXT);
+		RenderUtils.textFlat(g,font,"Готовые AutoWalk, AutoMine и AutoFarm — можно запускать или скопировать",20,y+18,MUTED);
+		y+=34;
+		y=drawLibraryCards(g,mx,my,AutomationDefaults.all(),true,y,cw);
+		y+=18;
+		RenderUtils.textBold(g,font,"МОИ КОНФИГИ",20,y,TEXT);
+		RenderUtils.textFlat(g,font,"Сценарии из JSON и собственные нодовые цепочки",20,y+18,MUTED);
+		y+=34;
 		if(AutomationManager.all().isEmpty()){
-			RenderUtils.textBold(g,font,"Здесь появятся ваши автоматизации",20,92,TEXT);
-			RenderUtils.textFlat(g,font,"Создайте конфиг и соедините действия в нужном порядке",20,112,MUTED);return;
-		}
-		for(AutomationConfig c:AutomationManager.all()){
-			if(x+cw>width-20){x=20;y+=118;} RenderUtils.drawSoftShadow(g,x,y,cw,104,12,4);
-			Box card=new Box(x,y,cw,104);float ch=anim("card:"+c.id,card.has(mx,my));RenderUtils.fillGlassPanel(g,x,y,cw,104,12,RenderUtils.mix(BORDER,ACCENT,ch*.45F),RenderUtils.mix(PANEL,0xFF1B1E28,ch*.45F),RenderUtils.mix(PANEL,0xFF1B1E28,ch*.45F),Util.getMillis());RenderUtils.fillCircle(g,x+22,y+24,6+ch*1.5F,ACCENT);
-			RenderUtils.textBold(g,font,trim(c.name,cw-70),x+38,y+18,TEXT);
-			RenderUtils.textFlat(g,font,c.nodes.size()+" действий  •  "+c.links.size()+" связей",x+18,y+43,MUTED);
-			Box run=new Box(x+18,y+70,72,22),edit=new Box(x+98,y+70,92,22),del=new Box(x+cw-72,y+70,54,22);
-			boolean running=AutomationRunner.isRunning(c);button(g,run,running?"Стоп":"Запуск",run.has(mx,my),running?0xFFFF6B78:0xFF66D9A3,true);drawRunIcon(g,run,running);
-			button(g,edit,"Редактор",edit.has(mx,my),ACCENT,false);button(g,del,"Удалить",del.has(mx,my),0xFFFF6B78,false);x+=cw+14;
-			if(c==contextMenuFor){int menuY=card.y+108+36>height?card.y-40:card.y+108;contextMenuBox=new Box(Math.min(card.x,Math.max(0,width-200)),menuY,200,36);}
-		}
+			RenderUtils.textFlat(g,font,"Пока нет пользовательских конфигов — нажмите «Новый конфиг»",20,y+10,MUTED);
+		} else drawLibraryCards(g,mx,my,AutomationManager.all(),false,y,cw);
 		if(contextMenuFor!=null&&contextMenuBox!=null){Box menu=contextMenuBox;RenderUtils.fillGlassPanel(g,menu.x,menu.y,menu.w,menu.h,8,BORDER,PANEL,PANEL,Util.getMillis());RenderUtils.textFlat(g,font,"Легитная ротация",menu.x+10,menu.y+12,TEXT);RenderUtils.drawToggle(g,menu.x+164,menu.y+10,26,16,contextMenuFor.legit?1F:0F,0xFF66D9A3);}
 		RenderUtils.textFlat(g,font,AutomationRunner.status(),20,height-18,AutomationRunner.isRunning()?0xFF66D9A3:MUTED);
 		if(addConfigChoiceOpen)drawConfigChoice(g,mx,my);
+	}
+
+	private int drawLibraryCards(GuiGraphicsExtractor g,int mx,int my,List<AutomationConfig> configs,boolean builtIn,int startY,int cw){
+		int x=20,y=startY;
+		for(AutomationConfig c:configs){
+			if(x+cw>width-20){x=20;y+=118;}
+			Box card=new Box(x,y,cw,104);float ch=anim("card:"+c.id,card.has(mx,my));
+			RenderUtils.drawSoftShadow(g,x,y,cw,104,12,4);
+			RenderUtils.fillGlassPanel(g,x,y,cw,104,12,RenderUtils.mix(BORDER,builtIn?0xFF55D6E8:ACCENT,ch*.45F),RenderUtils.mix(PANEL,0xFF1B1E28,ch*.45F),RenderUtils.mix(PANEL,0xFF1B1E28,ch*.45F),Util.getMillis());
+			RenderUtils.fillCircle(g,x+22,y+24,6+ch*1.5F,builtIn?0xFF55D6E8:ACCENT);
+			RenderUtils.textBold(g,font,trim(c.name,cw-70),x+38,y+18,TEXT);
+			RenderUtils.textFlat(g,font,builtIn?"Встроенный профиль • Baritone":c.nodes.size()+" действий  •  "+c.links.size()+" связей",x+18,y+43,MUTED);
+			Box run=new Box(x+18,y+70,72,22);
+			boolean running=AutomationRunner.isRunning(c);button(g,run,running?"Стоп":"Запуск",run.has(mx,my),running?0xFFFF6B78:0xFF66D9A3,true);drawRunIcon(g,run,running);
+			if(builtIn){
+				Box copy=new Box(x+98,y+70,92,22);button(g,copy,"Скопировать",copy.has(mx,my),ACCENT,false);
+			} else {
+				Box edit=new Box(x+98,y+70,92,22),del=new Box(x+cw-72,y+70,54,22);
+				button(g,edit,"Редактор",edit.has(mx,my),ACCENT,false);button(g,del,"Удалить",del.has(mx,my),0xFFFF6B78,false);
+				if(c==contextMenuFor){int menuY=card.y+108+36>height?card.y-40:card.y+108;contextMenuBox=new Box(Math.min(card.x,Math.max(0,width-200)),menuY,200,36);}
+			}
+			x+=cw+14;
+		}
+		return y+104;
 	}
 
 	private void drawEditor(GuiGraphicsExtractor g,int mx,int my){
@@ -163,17 +185,54 @@ public final class ClickGuiScreen extends Screen {
 		if(selected.type==AutomationNodeType.PLAYBACK){String raw=selected.value("frames");int frameCount=raw.isEmpty()?0:raw.split(";").length;
 			RenderUtils.textFlat(g,font,"Записано кадров: "+frameCount,x+16,y,MUTED);y+=16;
 			RenderUtils.textFlat(g,font,"Создаётся записью, вручную не редактируется",x+16,y,MUTED);y+=33;}
-		for(Map.Entry<String,String> e:selected.values.entrySet()){
-			if(selected.type==AutomationNodeType.PLAYBACK&&"frames".equals(e.getKey()))continue;
-			String id="value:"+e.getKey();RenderUtils.textFlat(g,font,label(e.getKey()),x+16,y,MUTED);
+		for(String key:inspectorKeys()){
+			if(selected.type==AutomationNodeType.PLAYBACK&&"frames".equals(key))continue;
+			String id="value:"+key;String value=selected.value(key);RenderUtils.textFlat(g,font,label(key),x+16,y,MUTED);
 			Box f=new Box(x+16,y+13,RIGHT-32,24);
-			if((selected.type==AutomationNodeType.GOTO&&("sprint".equals(e.getKey())||"path".equals(e.getKey())||"coordinate_mode".equals(e.getKey())||"marker".equals(e.getKey())))||(selected.type==AutomationNodeType.COORDINATE_CHECK&&"marker".equals(e.getKey()))||((selected.type==AutomationNodeType.CHAT_WAIT||selected.type==AutomationNodeType.CHAT_CHECK)&&"mode".equals(e.getKey()))||(selected.type==AutomationNodeType.MOVE&&"parkour".equals(e.getKey()))||(selected.type==AutomationNodeType.OPEN&&"require_sign".equals(e.getKey()))){
-				button(g,f,optionListLabel(e.getKey(),e.getValue()),f.has(mx,my)||id.equals(openOptionList),ACCENT,false);
-			}else field(g,f,e.getValue(),id,id.equals(focusedField),mx,my);
+			if(isOptionField(key))button(g,f,optionListLabel(key,value),f.has(mx,my)||id.equals(openOptionList),ACCENT,false);
+			else field(g,f,value,id,id.equals(focusedField),mx,my);
 			y+=49;}
 		g.disableScissor();
 		if(selected.type!=AutomationNodeType.START){Box duplicate=new Box(x+16,height-42,92,25),del=new Box(x+116,height-42,92,25);button(g,duplicate,"Дублировать",duplicate.has(mx,my),ACCENT,false);button(g,del,"Удалить действие",del.has(mx,my),0xFFFF6B78,false);}
 		if(openOptionList!=null&&selected!=null)drawOptionList(g,mx,my);
+	}
+
+	private List<String> inspectorKeys(){
+		List<String> keys=new ArrayList<>();
+		if(selected==null||selected.values==null)return keys;
+		if(selected.type==AutomationNodeType.GOTO){
+			addKey(keys,"coordinate_mode");
+			if("variable".equalsIgnoreCase(selected.value("coordinate_mode")))addKey(keys,"marker");
+			else {addKey(keys,"x");addKey(keys,"y");addKey(keys,"z");}
+			addKey(keys,"sprint");addKey(keys,"path");
+		} else if(selected.type==AutomationNodeType.MOVE){
+			addKey(keys,"destination_mode");
+			if("variable".equalsIgnoreCase(selected.value("destination_mode")))addKey(keys,"marker");
+			else if("manual".equalsIgnoreCase(selected.value("destination_mode"))){addKey(keys,"x");addKey(keys,"y");addKey(keys,"z");}
+			else {addKey(keys,"direction");addKey(keys,"seconds");}
+			addKey(keys,"sprint");addKey(keys,"parkour");addKey(keys,"parkour_profile");
+		}
+		for(String key:selected.values.keySet()){
+			if(selected.type==AutomationNodeType.GOTO&&(("variable".equalsIgnoreCase(selected.value("coordinate_mode"))&&List.of("x","y","z").contains(key))||("manual".equalsIgnoreCase(selected.value("coordinate_mode"))&&"marker".equals(key))))continue;
+			if(selected.type==AutomationNodeType.MOVE){
+				String mode=selected.value("destination_mode");
+				if("direction".equalsIgnoreCase(mode)&&List.of("x","y","z","marker").contains(key))continue;
+				if("manual".equalsIgnoreCase(mode)&&"marker".equals(key))continue;
+				if("variable".equalsIgnoreCase(mode)&&List.of("direction","seconds","x","y","z").contains(key))continue;
+			}
+			addKey(keys,key);
+		}
+		return keys;
+	}
+
+	private void addKey(List<String> keys,String key){if(selected.values.containsKey(key)&&!keys.contains(key))keys.add(key);}
+
+	private boolean isOptionField(String key){
+		return (selected.type==AutomationNodeType.GOTO&&List.of("sprint","path","coordinate_mode","marker","parkour","parkour_profile").contains(key))
+				||(selected.type==AutomationNodeType.COORDINATE_CHECK&&"marker".equals(key))
+				||((selected.type==AutomationNodeType.CHAT_WAIT||selected.type==AutomationNodeType.CHAT_CHECK)&&"mode".equals(key))
+				||(selected.type==AutomationNodeType.MOVE&&List.of("destination_mode","marker","sprint","parkour","parkour_profile","direction").contains(key))
+				||(selected.type==AutomationNodeType.OPEN&&"require_sign".equals(key));
 	}
 
 	private String optionListLabel(String key,String value){
@@ -182,13 +241,23 @@ public final class ClickGuiScreen extends Screen {
 		if("parkour".equals(key))return Boolean.parseBoolean(value)?"Baritone-паркур":"Обычное движение";
 		if("require_sign".equals(key))return Boolean.parseBoolean(value)?"Требовать табличку":"Без фильтра таблички";
 		if("coordinate_mode".equals(key))return "variable".equalsIgnoreCase(value)?"Переменная":"Ручной ввод";
+		if("destination_mode".equals(key))return switch(value.toLowerCase(Locale.ROOT)){case "variable"->"Метка";case "manual"->"Координаты";default->"Направление";};
 		if("path".equals(key))return"curved".equalsIgnoreCase(value)?"Кривой":"Прямой";
+		if("parkour_profile".equals(key))return switch(value.toLowerCase(Locale.ROOT)){case "neo"->"Neo / Head-to-Head";case "aggressive"->"Агрессивный";default->"Сбалансированный";};
+		if("direction".equals(key))return switch(value.toLowerCase(Locale.ROOT)){case "back","backward"->"Назад";case "left"->"Влево";case "right"->"Вправо";case "forward_left","left_45","45_left","strafe_left"->"45° влево";case "forward_right","right_45","45_right","strafe_right"->"45° вправо";default->"Вперёд";};
 		boolean sprint=value.contains("sprint"),jump=value.contains("jump");
 		if(!sprint&&!jump)return"—";
 		return(sprint?"Спринт":"")+(sprint&&jump?", ":"")+(jump?"Прыгать":"");
 	}
 
-	private Box optionListBox(){return new Box(width/2-110,height/2-70,220,140);}
+	private Box optionListBox(){
+		int rows=2;
+		if("value:marker".equals(openOptionList))rows=Math.min(7,RegionManager.getInstance().getAllMarkers().size()+1);
+		if("value:parkour_profile".equals(openOptionList))rows=3;
+		if("value:direction".equals(openOptionList))rows=8;
+		if("value:destination_mode".equals(openOptionList))rows=3;
+		return new Box(width/2-110,height/2-70,220,Math.max(140,rows*32+38));
+	}
 
 	private void drawOptionList(GuiGraphicsExtractor g,int mx,int my){
 		Box b=optionListBox();RenderUtils.fillGlassPanel(g,b.x,b.y,b.w,b.h,10,BORDER,PANEL,PANEL,Util.getMillis());
@@ -207,6 +276,10 @@ public final class ClickGuiScreen extends Screen {
 			button(g,curvedRow,"Кривой",curvedRow.has(mx,my),ACCENT,"curved".equalsIgnoreCase(raw));
 		}else if("value:coordinate_mode".equals(openOptionList)){
 			Box manual=new Box(b.x+14,b.y+34,b.w-28,28),variable=new Box(b.x+14,b.y+66,b.w-28,28);button(g,manual,"Ручной ввод",manual.has(mx,my),ACCENT,"manual".equals(selected.value("coordinate_mode")));button(g,variable,"Переменная",variable.has(mx,my),ACCENT,"variable".equals(selected.value("coordinate_mode")));
+		}else if("value:destination_mode".equals(openOptionList)){
+			String value=selected.value("destination_mode");
+			String[] values={"direction","manual","variable"};String[] labels={"Направление","Координаты","Метка"};
+			for(int i=0;i<values.length;i++){Box row=new Box(b.x+14,b.y+34+i*32,b.w-28,28);button(g,row,labels[i],row.has(mx,my),ACCENT,values[i].equalsIgnoreCase(value));}
 		}else if("value:mode".equals(openOptionList)){
 			Box contains=new Box(b.x+14,b.y+34,b.w-28,28),regex=new Box(b.x+14,b.y+66,b.w-28,28);button(g,contains,"Содержит текст",contains.has(mx,my),ACCENT,!"regex".equalsIgnoreCase(selected.value("mode")));button(g,regex,"Регулярное выражение",regex.has(mx,my),ACCENT,"regex".equalsIgnoreCase(selected.value("mode")));
 		}else if("value:parkour".equals(openOptionList)){
@@ -214,7 +287,18 @@ public final class ClickGuiScreen extends Screen {
 		}else if("value:require_sign".equals(openOptionList)){
 			Box any=new Box(b.x+14,b.y+34,b.w-28,28),required=new Box(b.x+14,b.y+66,b.w-28,28);button(g,any,"Без фильтра",any.has(mx,my),ACCENT,!Boolean.parseBoolean(selected.value("require_sign")));button(g,required,"Только с табличкой",required.has(mx,my),0xFFFFD166,Boolean.parseBoolean(selected.value("require_sign")));
 		}else if("value:marker".equals(openOptionList)){
-			int y=b.y+20;for(var marker:RegionManager.getInstance().getAllMarkers().stream().limit(3).toList()){Box row=new Box(b.x+14,y,b.w-28,28);button(g,row,marker.name,row.has(mx,my),ACCENT,marker.name.equals(selected.value("marker")));y+=32;}
+			int y=b.y+34,shown=0;for(var marker:RegionManager.getInstance().getAllMarkers()){
+				if(shown++>=6)break;
+				Box row=new Box(b.x+14,y,b.w-28,28);button(g,row,marker.name,row.has(mx,my),ACCENT,marker.name.equals(selected.value("marker")));y+=32;
+			}
+			Box add=new Box(b.x+14,y,b.w-28,28);button(g,add,"+ Добавить метку",add.has(mx,my),0xFF00AAFF,false);
+		}else if("value:parkour_profile".equals(openOptionList)){
+			String value=selected.value("parkour_profile");
+			String[] profiles={"balanced","aggressive","neo"};String[] labels={"Сбалансированный","Агрессивный","Neo / Head-to-Head"};
+			for(int i=0;i<profiles.length;i++){Box row=new Box(b.x+14,b.y+34+i*32,b.w-28,28);button(g,row,labels[i],row.has(mx,my),0xFF6FE0C2,profiles[i].equalsIgnoreCase(value));}
+		}else if("value:direction".equals(openOptionList)){
+			String[] values={"forward","back","left","right","45_left","45_right","back_left","back_right"};String[] labels={"Вперёд","Назад","Влево","Вправо","45° влево","45° вправо","Назад-влево","Назад-вправо"};
+			for(int i=0;i<values.length;i++){Box row=new Box(b.x+14,b.y+34+i*32,b.w-28,28);button(g,row,labels[i],row.has(mx,my),ACCENT,values[i].equalsIgnoreCase(selected.value("direction")));}
 		}
 	}
 
@@ -222,11 +306,44 @@ public final class ClickGuiScreen extends Screen {
 	private boolean clickLibrary(double mx,double my,int button){
 		if(contextMenuFor!=null&&contextMenuBox!=null){Box menu=contextMenuBox;Box toggle=new Box(menu.x+156,menu.y+5,36,26);if(toggle.has(mx,my)){contextMenuFor.legit=!contextMenuFor.legit;AutomationManager.save();contextMenuFor=null;return true;}if(!menu.has(mx,my)){contextMenuFor=null;contextMenuBox=null;}}
 		if(addConfigChoiceOpen){Box menu=configChoiceBox();if(!menu.has(mx,my)){addConfigChoiceOpen=false;return true;}if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT){if(new Box(menu.x+8,menu.y+8,menu.w-16,22).has(mx,my)){addConfigChoiceOpen=false;ActionRecorder.start();if(minecraft!=null)minecraft.gui.setScreen(null);return true;}if(new Box(menu.x+8,menu.y+34,menu.w-16,22).has(mx,my)){editing=AutomationManager.create();addConfigChoiceOpen=false;return true;}}return true;}
-		if(button==GLFW.GLFW_MOUSE_BUTTON_RIGHT){int rx=20,ry=68,cwRight=Math.max(260,Math.min(370,(width-60)/2));for(AutomationConfig c:AutomationManager.all()){if(rx+cwRight>width-20){rx=20;ry+=118;}if(new Box(rx,ry,cwRight,104).has(mx,my)){contextMenuFor=c;return true;}rx+=cwRight+14;}return true;}
+		int cw=Math.max(260,Math.min(370,(width-60)/2));
+		if(button==GLFW.GLFW_MOUSE_BUTTON_RIGHT){
+			int y=libraryCustomStartY(cw);
+			int rx=20,ry=y;
+			for(AutomationConfig c:AutomationManager.all()){
+				if(rx+cw>width-20){rx=20;ry+=118;}
+				if(new Box(rx,ry,cw,104).has(mx,my)){contextMenuFor=c;return true;}
+				rx+=cw+14;
+			}
+			return true;
+		}
 		if(button!=GLFW.GLFW_MOUSE_BUTTON_LEFT)return true;if(new Box(20,12,142,25).has(mx,my)){addConfigChoiceOpen=true;return true;}
-		int x=20,y=68,cw=Math.max(260,Math.min(370,(width-60)/2));for(AutomationConfig c:new ArrayList<>(AutomationManager.all())){if(x+cw>width-20){x=20;y+=118;}
+		int y=64+34;
+		for(AutomationConfig c:AutomationDefaults.all()){
+			int x=20;
+			// Built-ins use the same two-column packing as the renderer.
+			for(AutomationConfig ignored:AutomationDefaults.all()){
+				if(ignored==c)break;
+				x+=cw+14;
+				if(x+cw>width-20){x=20;y+=118;}
+			}
 			if(new Box(x+18,y+70,72,22).has(mx,my)){if(AutomationRunner.isRunning(c))AutomationRunner.stop("Остановлено пользователем");else AutomationRunner.start(c);return true;}
-			if(new Box(x+98,y+70,92,22).has(mx,my)){editing=c;return true;}if(new Box(x+cw-72,y+70,54,22).has(mx,my)){AutomationManager.remove(c);return true;}x+=cw+14;}return true;
+			if(new Box(x+98,y+70,92,22).has(mx,my)){AutomationConfig copy=AutomationManager.copyOf(c);editing=copy;return true;}
+		}
+		int customY=libraryCustomStartY(cw),x=20;
+		for(AutomationConfig c:new ArrayList<>(AutomationManager.all())){
+			if(x+cw>width-20){x=20;customY+=118;}
+			if(new Box(x+18,customY+70,72,22).has(mx,my)){if(AutomationRunner.isRunning(c))AutomationRunner.stop("Остановлено пользователем");else AutomationRunner.start(c);return true;}
+			if(new Box(x+98,customY+70,92,22).has(mx,my)){editing=c;return true;}
+			if(new Box(x+cw-72,customY+70,54,22).has(mx,my)){AutomationManager.remove(c);return true;}
+			x+=cw+14;
+		}
+		return true;
+	}
+	private int libraryCustomStartY(int cw){
+		int columns=Math.max(1,(width-26)/(cw+14));
+		int rows=(AutomationDefaults.all().size()+columns-1)/columns;
+		return 64+34+(rows-1)*118+104+18+34;
 	}
 	private boolean clickEditor(double mx,double my,int button){
 		if(openOptionList!=null&&selected!=null){Box b=optionListBox();
@@ -243,6 +360,9 @@ public final class ClickGuiScreen extends Screen {
 					if(row2.has(mx,my)){selected.values.put("path","curved");openOptionList=null;return true;}
 				}else if("value:coordinate_mode".equals(openOptionList)){
 					if(row1.has(mx,my)){selected.values.put("coordinate_mode","manual");openOptionList=null;return true;}if(row2.has(mx,my)){selected.values.put("coordinate_mode","variable");openOptionList=null;return true;}
+				}else if("value:destination_mode".equals(openOptionList)){
+					String[] modes={"direction","manual","variable"};
+					for(int i=0;i<modes.length;i++)if(new Box(b.x+14,b.y+34+i*32,b.w-28,28).has(mx,my)){selected.values.put("destination_mode",modes[i]);openOptionList=null;return true;}
 				}else if("value:mode".equals(openOptionList)){
 					if(row1.has(mx,my)){selected.values.put("mode","contains");openOptionList=null;return true;}if(row2.has(mx,my)){selected.values.put("mode","regex");openOptionList=null;return true;}
 				}else if("value:parkour".equals(openOptionList)){
@@ -250,7 +370,17 @@ public final class ClickGuiScreen extends Screen {
 				}else if("value:require_sign".equals(openOptionList)){
 					if(row1.has(mx,my)){selected.values.put("require_sign","false");openOptionList=null;return true;}if(row2.has(mx,my)){selected.values.put("require_sign","true");openOptionList=null;return true;}
 				}else if("value:marker".equals(openOptionList)){
-					int y=b.y+20;for(var marker:RegionManager.getInstance().getAllMarkers().stream().limit(3).toList()){if(new Box(b.x+14,y,b.w-28,28).has(mx,my)){selected.values.put("marker",marker.name);if(selected.type==AutomationNodeType.GOTO)selected.values.put("coordinate_mode","variable");openOptionList=null;return true;}y+=32;}
+					int y=b.y+34,shown=0;for(var marker:RegionManager.getInstance().getAllMarkers()){
+						if(shown++>=6)break;
+						if(new Box(b.x+14,y,b.w-28,28).has(mx,my)){selected.values.put("marker",marker.name);if(selected.type==AutomationNodeType.GOTO)selected.values.put("coordinate_mode","variable");openOptionList=null;return true;}y+=32;
+					}
+					if(new Box(b.x+14,y,b.w-28,28).has(mx,my)){activateMarkerCapture();return true;}
+				}else if("value:parkour_profile".equals(openOptionList)){
+					String[] profiles={"balanced","aggressive","neo"};
+					for(int i=0;i<profiles.length;i++)if(new Box(b.x+14,b.y+34+i*32,b.w-28,28).has(mx,my)){selected.values.put("parkour_profile",profiles[i]);openOptionList=null;return true;}
+				}else if("value:direction".equals(openOptionList)){
+					String[] directions={"forward","back","left","right","45_left","45_right","back_left","back_right"};
+					for(int i=0;i<directions.length;i++)if(new Box(b.x+14,b.y+34+i*32,b.w-28,28).has(mx,my)){selected.values.put("direction",directions[i]);openOptionList=null;return true;}
 				}
 			}
 			return true;}
@@ -263,7 +393,7 @@ public final class ClickGuiScreen extends Screen {
 		if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT&&legitBox().has(mx,my)){editing.legit=!editing.legit;return true;}
 		if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT&&selected!=null&&selected.type!=AutomationNodeType.START&&new Box(width-RIGHT+16,height-42,92,25).has(mx,my)){duplicateSelected();return true;}
 		if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT&&selected!=null&&selected.type!=AutomationNodeType.START&&new Box(width-RIGHT+116,height-42,92,25).has(mx,my)){removeSelected();return true;}
-		if(selected!=null){int y=TOP+76-Math.round(inspectorScroll);for(String key:selected.values.keySet()){if(selected.type==AutomationNodeType.PLAYBACK&&"frames".equals(key))continue;if(new Box(width-RIGHT+16,y+13,RIGHT-32,24).has(mx,my)&&my>=TOP+68&&my<height-50){if((selected.type==AutomationNodeType.GOTO&&( "sprint".equals(key)||"path".equals(key)||"coordinate_mode".equals(key)||"marker".equals(key)))||(selected.type==AutomationNodeType.COORDINATE_CHECK&&"marker".equals(key))||((selected.type==AutomationNodeType.CHAT_WAIT||selected.type==AutomationNodeType.CHAT_CHECK)&&"mode".equals(key))||(selected.type==AutomationNodeType.MOVE&&"parkour".equals(key))||(selected.type==AutomationNodeType.OPEN&&"require_sign".equals(key)))openOptionList="value:"+key;else focusedField="value:"+key;return true;}y+=49;}}focusedField=null;
+		if(selected!=null){int y=TOP+76-Math.round(inspectorScroll);for(String key:inspectorKeys()){if(selected.type==AutomationNodeType.PLAYBACK&&"frames".equals(key))continue;if(new Box(width-RIGHT+16,y+13,RIGHT-32,24).has(mx,my)&&my>=TOP+68&&my<height-50){if(isOptionField(key))openOptionList="value:"+key;else focusedField="value:"+key;return true;}y+=49;}}focusedField=null;
 		if(button==GLFW.GLFW_MOUSE_BUTTON_LEFT&&new Box(LEFT+18,height-54,36,36).has(mx,my)){toast("Выберите действие слева");return true;}
 		int py=TOP+78-Math.round(paletteScroll);for(AutomationNodeType t:paletteTypes()){if(new Box(10,py,LEFT-20,38).has(mx,my)&&my>=TOP+72){AutomationNode n=new AutomationNode(t,Math.max(24,width/2F-LEFT),80+editing.nodes.size()*18F);editing.nodes.add(n);selected=n;inspectorScroll=inspectorTarget=0;return true;}py+=43;}
 		for(int i=editing.nodes.size()-1;i>=0;i--){AutomationNode n=editing.nodes.get(i);Box b=nodeBox(n);if(button==GLFW.GLFW_MOUSE_BUTTON_RIGHT&&b.has(mx,my)&&n.type!=AutomationNodeType.START){selected=n;removeSelected();return true;}if(button!=GLFW.GLFW_MOUSE_BUTTON_LEFT)continue;
@@ -293,12 +423,23 @@ public final class ClickGuiScreen extends Screen {
 	private List<AutomationNodeType> addMenuTypes(AutomationNodeType.Category category){String query=addMenuQuery.toLowerCase(Locale.ROOT);List<AutomationNodeType> types=new ArrayList<>();for(AutomationNodeType t:AutomationNodeType.values())if(t.category()==category&&(query.isEmpty()||t.title().toLowerCase(Locale.ROOT).contains(query)||t.description().toLowerCase(Locale.ROOT).contains(query)))types.add(t);return types;}
 	private int addMenuContentHeight(){int height=0;for(AutomationNodeType.Category category:AutomationNodeType.Category.values()){List<AutomationNodeType> types=addMenuTypes(category);if(!types.isEmpty())height+=20+types.size()*43;}return height;}
 	private void addNode(AutomationNodeType type){AutomationNode n=new AutomationNode(type,Math.max(24,width/2F-LEFT),80+editing.nodes.size()*18F);editing.nodes.add(n);selected=n;inspectorScroll=inspectorTarget=0;addMenuOpen=false;addMenuQuery="";focusedField=null;}
+	private void activateMarkerCapture(){
+		RegionManager region=RegionManager.getInstance();
+		region.addMarkerMode=true;
+		region.addCornerMode=false;
+		openOptionList=null;
+		focusedField=null;
+		save();
+		FreeCamController.getInstance().activate();
+		toast("FreeCam включён: наведите камеру и нажмите ПКМ по блоку");
+		if(minecraft!=null)minecraft.gui.setScreen(null);
+	}
 	private Box nodeBox(AutomationNode n){return new Box(LEFT+Math.round(n.x),TOP+Math.round(n.y),NW,NH);}
 	private int outputY(AutomationNode n,String out){Box b=nodeBox(n);return branch(n)?b.y+("false".equals(out)?57:39):b.y+48;}
 	private String hitOutput(AutomationNode n,double mx,double my){if(n.type==AutomationNodeType.STOP)return null;Box b=nodeBox(n);if(Math.abs(mx-(b.x+b.w))>9)return null;if(branch(n)){if(Math.abs(my-(b.y+39))<=9)return "true";if(Math.abs(my-(b.y+57))<=9)return "false";}else if(Math.abs(my-(b.y+48))<=9)return "next";return null;}
 	private static boolean branch(AutomationNode n){return n.type.branching();}
-	private String summary(AutomationNode n){return switch(n.type){case START->"Начало потока";case STOP->"Конец потока";case GOTO->trim(n.value("x")+", "+n.value("y")+", "+n.value("z"),128);case OPEN->trim(n.value("x")+", "+n.value("y")+", "+n.value("z")+(Boolean.parseBoolean(n.value("require_sign"))?" • Табличка: "+n.value("sign_text"):""),128);case MINE->trim(n.value("block")+" × "+n.value("count"),128);case SEARCH->trim(n.value("block"),128);case USE,INTERACT->"Рука: "+n.value("hand");case SELECT_SLOT->"Слот "+n.value("slot");case PICKUP->trim("Предмет: "+n.value("item"),128);case MOVE_ITEM->n.value("from")+" → "+n.value("to");case QUICK_MOVE->"Слот "+n.value("slot");case DROP_ITEM->"Слот "+n.value("slot")+" • "+n.value("amount");case TAKE_CONTAINER->"Пауза "+n.value("delay_ticks")+" тик.";case EAT->trim(n.value("food"),128);case FOOD_CHECK,HEALTH_CHECK->n.value("operator")+" "+n.value("value");case ITEM_CHECK->trim(n.value("item")+" × "+n.value("count"),128);case CONTAINER_CHECK->"Состояние: "+n.value("state");case PLAYER_COUNT_CHECK->"Игроков рядом "+n.value("operator")+" "+n.value("value");case LOOK->"point".equals(n.value("mode"))?"К точке":"Yaw "+n.value("yaw")+" • Pitch "+n.value("pitch");case MOVE->n.value("direction")+" • "+n.value("seconds")+" сек."+(Boolean.parseBoolean(n.value("parkour"))?" • Паркур":"");case JUMP->"Обычный прыжок";case SNEAK->n.value("seconds")+" сек.";case ATTACK->n.value("swings")+" удар.";case FOLLOW->trim(n.value("entity")+" "+n.value("name"),128);case EXPLORE,FARM->"Радиус "+n.value("radius");case COORDINATE_CHECK->n.value("axis")+" "+n.value("operator")+" "+n.value("value");case CHAT,CHAT_SEND->trim(n.value("message"),128);case CHAT_COMMAND->trim(n.value("command"),128);case CHAT_WAIT,CHAT_CHECK->trim(n.value("pattern"),128);case WAIT->n.value("seconds")+" сек.";case COMMAND->trim(n.value("command"),128);case SET_VARIABLE->trim(n.value("name")+" = "+n.value("value"),128);case CONDITION->trim(n.value("left")+" "+n.value("operator")+" "+n.value("right"),128);case PARALLEL->"Ветка + далее";case SET_FLAG->"Флаг: "+n.value("flag");case WAIT_FLAG->"Жду флаг: "+n.value("flag");case PLAYBACK->{String raw=n.value("frames");yield (raw.isEmpty()?0:raw.split(";").length)+" кадров";}};}
-	private String label(String k){return switch(k){case"x","y","z"->"Координата "+k.toUpperCase();case"axis"->"Ось: x / y / z";case"block"->"ID блока";case"item"->"ID блока/предмета";case"count"->"Количество";case"slot"->"Слот / слот хотбара";case"from"->"Из слота меню";case"to"->"В слот меню";case"amount"->"one / stack";case"delay_ticks"->"Пауза между кликами";case"food"->"ID еды или any";case"state"->"Состояние: open / closed";case"restore_slot"->"Вернуть слот: true / false";case"require_sign"->"Фильтр по табличке";case"sign_text"->"Текст на табличке";case"parkour"->"Паркур Baritone";case"mode"->"Режим сопоставления";case"yaw"->"Yaw";case"pitch"->"Pitch";case"direction"->"forward / back / left / right / 45_left";case"swings"->"Количество ударов";case"hand"->"Рука: main / off";case"entity"->"Тип сущности";case"radius"->"Радиус";case"message"->"Сообщение";case"pattern"->"Фрагмент или regex";case"timeout"->"Таймаут, сек.";case"seconds"->"Секунды";case"command"->"Команда чата";case"name"->"Имя / переменная";case"flag"->"Имя флага";case"value"->"Значение";case"left"->"Левая часть";case"operator"->"Оператор: == != > >= < <= contains";case"right"->"Правая часть";default->k;};}
+	private String summary(AutomationNode n){return switch(n.type){case START->"Начало потока";case STOP->"Конец потока";case GOTO->"variable".equalsIgnoreCase(n.value("coordinate_mode"))?"Метка: "+n.value("marker"):trim(n.value("x")+", "+n.value("y")+", "+n.value("z"),128);case OPEN->trim(n.value("x")+", "+n.value("y")+", "+n.value("z")+(Boolean.parseBoolean(n.value("require_sign"))?" • Табличка: "+n.value("sign_text"):""),128);case MINE->trim(n.value("block")+" × "+n.value("count"),128);case SEARCH->trim(n.value("block"),128);case USE,INTERACT->"Рука: "+n.value("hand");case SELECT_SLOT->"Слот "+n.value("slot");case PICKUP->trim("Предмет: "+n.value("item"),128);case MOVE_ITEM->n.value("from")+" → "+n.value("to");case QUICK_MOVE->"Слот "+n.value("slot");case DROP_ITEM->"Слот "+n.value("slot")+" • "+n.value("amount");case TAKE_CONTAINER->"Пауза "+n.value("delay_ticks")+" тик.";case EAT->trim(n.value("food"),128);case FOOD_CHECK,HEALTH_CHECK->n.value("operator")+" "+n.value("value");case ITEM_CHECK->trim(n.value("item")+" × "+n.value("count"),128);case CONTAINER_CHECK->"Состояние: "+n.value("state");case PLAYER_COUNT_CHECK->"Игроков рядом "+n.value("operator")+" "+n.value("value");case LOOK->"point".equals(n.value("mode"))?"К точке":"Yaw "+n.value("yaw")+" • Pitch "+n.value("pitch");case MOVE->"variable".equalsIgnoreCase(n.value("destination_mode"))?"Метка: "+n.value("marker"):"manual".equalsIgnoreCase(n.value("destination_mode"))?trim(n.value("x")+", "+n.value("y")+", "+n.value("z"),128):n.value("direction")+" • "+n.value("seconds")+" сек."+(Boolean.parseBoolean(n.value("parkour"))?" • "+n.value("parkour_profile"):"");case JUMP->"Обычный прыжок";case SNEAK->n.value("seconds")+" сек.";case ATTACK->n.value("swings")+" удар.";case FOLLOW->trim(n.value("entity")+" "+n.value("name"),128);case EXPLORE,FARM->"Радиус "+n.value("radius");case COORDINATE_CHECK->n.value("axis")+" "+n.value("operator")+" "+n.value("value");case CHAT,CHAT_SEND->trim(n.value("message"),128);case CHAT_COMMAND->trim(n.value("command"),128);case CHAT_WAIT,CHAT_CHECK->trim(n.value("pattern"),128);case WAIT,TIMER->n.value("seconds")+" сек.";case COMMAND->trim(n.value("command"),128);case SET_VARIABLE->trim(n.value("name")+" = "+n.value("value"),128);case CONDITION->trim(n.value("left")+" "+n.value("operator")+" "+n.value("right"),128);case PARALLEL->"Ветка + далее";case SET_FLAG->"Флаг: "+n.value("flag");case WAIT_FLAG->"Жду флаг: "+n.value("flag");case PLAYBACK->{String raw=n.value("frames");yield (raw.isEmpty()?0:raw.split(";").length)+" кадров";}};}
+	private String label(String k){return switch(k){case"x","y","z"->"Координата "+k.toUpperCase();case"coordinate_mode"->"Идти к";case"marker"->"Метка";case"axis"->"Ось: x / y / z";case"block"->"ID блока";case"item"->"ID блока/предмета";case"count"->"Количество";case"slot"->"Слот / слот хотбара";case"from"->"Из слота меню";case"to"->"В слот меню";case"amount"->"one / stack";case"delay_ticks"->"Пауза между кликами";case"food"->"ID еды или any";case"state"->"Состояние: open / closed";case"restore_slot"->"Вернуть слот: true / false";case"require_sign"->"Фильтр по табличке";case"sign_text"->"Текст на табличке";case"parkour"->"Паркур Baritone";case"parkour_profile"->"Профиль паркура";case"mode"->"Режим сопоставления";case"yaw"->"Yaw";case"pitch"->"Pitch";case"direction"->"Направление";case"swings"->"Количество ударов";case"hand"->"Рука: main / off";case"entity"->"Тип сущности";case"radius"->"Радиус";case"message"->"Сообщение";case"pattern"->"Фрагмент или regex";case"timeout"->"Таймаут, сек.";case"seconds"->"Секунды";case"command"->"Команда чата";case"name"->"Имя / переменная";case"flag"->"Имя флага";case"value"->"Значение";case"left"->"Левая часть";case"operator"->"Оператор: == != > >= < <= contains";case"right"->"Правая часть";default->k;};}
 
 	private void field(GuiGraphicsExtractor g,Box b,String value,String key,boolean focus,int mx,int my){float h=anim("field:"+key,b.has(mx,my)||focus);RenderUtils.fillRoundedBorder(g,b.x,b.y,b.w,b.h,7,RenderUtils.mix(BORDER,ACCENT,h),RenderUtils.mix(0xB30A0C12,0xD31B1D28,h*.45F));String shown=trim(value,b.w-18);if(focus&&(Util.getMillis()/500L)%2==0)shown+="|";RenderUtils.textFlat(g,font,shown,b.x+9,b.y+7,RenderUtils.mix(MUTED,TEXT,.45F+h*.55F));}
 	private void button(GuiGraphicsExtractor g,Box b,String text,boolean hover,int color,boolean filled){float h=anim("button:"+text+":"+b.x+":"+b.y,hover);int bg=filled?RenderUtils.mix(color,0xFFFFFFFF,h*.12F):RenderUtils.mix(0xA9151720,color,.06F+h*.20F);int lift=Math.round(h);RenderUtils.fillGlassPanel(g,b.x,b.y-lift,b.w,b.h,7,RenderUtils.mix(filled?color:BORDER,0xFFFFFFFF,h*.18F),bg,bg,Util.getMillis());RenderUtils.textCentered(g,font,text,b.x+b.w/2,b.y-lift+(b.h-font.lineHeight)/2+1,filled?0xFF0B0C10:TEXT,false);}

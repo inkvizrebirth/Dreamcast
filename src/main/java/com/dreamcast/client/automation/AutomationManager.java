@@ -15,6 +15,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /** Loads and saves workflows independently of the legacy module settings. */
 public final class AutomationManager {
@@ -45,6 +48,19 @@ public final class AutomationManager {
 			if (config.links == null) config.links = new ArrayList<>();
 			for (AutomationNode node : config.nodes) {
 				if (node.values == null) node.values = new java.util.LinkedHashMap<>();
+				if (node.type == AutomationNodeType.GOTO) {
+					node.values.putIfAbsent("coordinate_mode", "manual");
+					node.values.putIfAbsent("marker", "");
+					node.values.putIfAbsent("parkour", "false");
+					node.values.putIfAbsent("parkour_profile", "balanced");
+				}
+				if (node.type == AutomationNodeType.MOVE) {
+					node.values.putIfAbsent("destination_mode", "direction");
+					node.values.putIfAbsent("x", "${player.x}"); node.values.putIfAbsent("y", "${player.y}"); node.values.putIfAbsent("z", "${player.z}");
+					node.values.putIfAbsent("marker", ""); node.values.putIfAbsent("sprint", "");
+					node.values.putIfAbsent("parkour", "false"); node.values.putIfAbsent("parkour_profile", "balanced");
+				}
+				if (node.type == AutomationNodeType.TIMER) node.values.putIfAbsent("seconds", "5");
 			}
 		}
 	}
@@ -69,6 +85,47 @@ public final class AutomationManager {
 		CONFIGS.add(config);
 		save();
 		return config;
+	}
+
+	/**
+	 * Creates a persisted editable copy of a built-in or existing workflow.
+	 *
+	 * @param source workflow to copy
+	 * @return the new workflow, or {@code null} when {@code source} is null
+	 */
+	public static AutomationConfig copyOf(AutomationConfig source) {
+		if (source == null) return null;
+		AutomationConfig copy = new AutomationConfig();
+		copy.id = UUID.randomUUID().toString();
+		copy.name = (source.name == null ? "Конфиг" : source.name) + " — копия";
+		copy.legit = source.legit;
+		copy.builtIn = false;
+		copy.nodes = new ArrayList<>();
+		copy.links = new ArrayList<>();
+		Map<String, String> ids = new HashMap<>();
+		if (source.nodes != null) {
+			for (AutomationNode original : source.nodes) {
+				if (original == null) continue;
+				AutomationNode node = new AutomationNode();
+				node.id = UUID.randomUUID().toString();
+				node.type = original.type;
+				node.x = original.x;
+				node.y = original.y;
+				node.values = original.values == null ? new java.util.LinkedHashMap<>() : new java.util.LinkedHashMap<>(original.values);
+				copy.nodes.add(node);
+				ids.put(original.id, node.id);
+			}
+		}
+		if (source.links != null) {
+			for (AutomationLink link : source.links) {
+				if (link == null) continue;
+				String from = ids.get(link.from), to = ids.get(link.to);
+				if (from != null && to != null) copy.links.add(new AutomationLink(from, link.output, to));
+			}
+		}
+		CONFIGS.add(copy);
+		save();
+		return copy;
 	}
 
 	/** Adds an already-built config (e.g. one produced by {@link ActionRecorder}) and persists it. */

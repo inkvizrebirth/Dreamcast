@@ -186,8 +186,49 @@ public final class BaritoneBridge {
 			setSetting(settings, "allowDiagonalDescend", enabled);
 			setSetting(settings, "allowDownward", enabled);
 			setSetting(settings, "sprintAscends", enabled);
+			if (!enabled) {
+				setSetting(settings, "allowOvershootDiagonalDescend", false);
+				setSetting(settings, "allowJumpAtBuildLimit", false);
+				setSetting(settings, "allowJumpAt256", false);
+				setSetting(settings, "jumpPenalty", 1.0D);
+				setSetting(settings, "maxFallHeightNoWater", 2);
+			}
 		} catch (ReflectiveOperationException | RuntimeException error) {
 			DreamcastClient.LOGGER.warn("Не удалось применить режим паркура Baritone", error);
+		}
+	}
+
+	/**
+	 * Applies a named parkour profile. The {@code neo} profile enables diagonal
+	 * transitions, overshoot descents and low jump penalties while keeping fall
+	 * height bounded so a bad route cannot turn into an uncontrolled drop.
+	 * Unknown or empty values use the conservative {@code balanced} profile.
+	 *
+	 * @param profile profile name: {@code balanced}, {@code aggressive} or {@code neo}
+	 */
+	public static void configureParkourProfile(String profile) {
+		String normalized = profile == null ? "balanced" : profile.trim().toLowerCase(java.util.Locale.ROOT);
+		boolean neo = "neo".equals(normalized);
+		boolean aggressive = neo || "aggressive".equals(normalized);
+		try {
+			Class<?> api = classFor(API_CLASS);
+			Object settings = api == null ? null : invokeStatic(api, "getSettings");
+			if (settings == null) return;
+			setSetting(settings, "allowSprint", true);
+			setSetting(settings, "allowParkour", true);
+			setSetting(settings, "allowParkourPlace", aggressive);
+			setSetting(settings, "allowParkourAscend", true);
+			setSetting(settings, "allowDiagonalAscend", aggressive);
+			setSetting(settings, "allowDiagonalDescend", aggressive);
+			setSetting(settings, "allowOvershootDiagonalDescend", neo);
+			setSetting(settings, "allowDownward", aggressive);
+			setSetting(settings, "sprintAscends", aggressive);
+			setSetting(settings, "allowJumpAtBuildLimit", neo);
+			setSetting(settings, "allowJumpAt256", neo);
+			setSetting(settings, "jumpPenalty", neo ? 0.0D : aggressive ? 0.2D : 1.0D);
+			setSetting(settings, "maxFallHeightNoWater", neo ? 3 : 2);
+		} catch (ReflectiveOperationException | RuntimeException error) {
+			DreamcastClient.LOGGER.warn("Не удалось применить профиль паркура {}", profile, error);
 		}
 	}
 
@@ -207,7 +248,7 @@ public final class BaritoneBridge {
 		try {
 			Object setting = settings.getClass().getField(name).get(settings);
 			setting.getClass().getField("value").set(setting, value);
-		} catch (NoSuchFieldException ignored) {
+		} catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException ignored) {
 			// Different Baritone forks expose slightly different setting sets.
 		}
 	}

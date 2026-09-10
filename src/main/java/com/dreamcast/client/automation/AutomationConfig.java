@@ -8,6 +8,8 @@ import java.util.UUID;
 public final class AutomationConfig {
 	public String id = UUID.randomUUID().toString();
 	public String name = "Новый конфиг";
+	/** True for the built-in read-only Baritone profiles shown in the launcher. */
+	public boolean builtIn;
 	public boolean legit;
 	public List<AutomationNode> nodes = new ArrayList<>();
 	public List<AutomationLink> links = new ArrayList<>();

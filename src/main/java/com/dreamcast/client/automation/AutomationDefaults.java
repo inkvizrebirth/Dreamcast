@@ -23,7 +23,7 @@ public final class AutomationDefaults {
 		move.values.put("direction", "forward");
 		move.values.put("seconds", "10");
 		move.values.put("parkour", "true");
-		move.values.put("parkour_profile", "neo");
+		move.values.put("parkour_profile", "universal");
 		link(config, move);
 		return config;
 	}

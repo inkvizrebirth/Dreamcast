@@ -52,13 +52,13 @@ public final class AutomationManager {
 					node.values.putIfAbsent("coordinate_mode", "manual");
 					node.values.putIfAbsent("marker", "");
 					node.values.putIfAbsent("parkour", "false");
-					node.values.putIfAbsent("parkour_profile", "balanced");
+					node.values.putIfAbsent("parkour_profile", "universal");
 				}
 				if (node.type == AutomationNodeType.MOVE) {
 					node.values.putIfAbsent("destination_mode", "direction");
 					node.values.putIfAbsent("x", "${player.x}"); node.values.putIfAbsent("y", "${player.y}"); node.values.putIfAbsent("z", "${player.z}");
 					node.values.putIfAbsent("marker", ""); node.values.putIfAbsent("sprint", "");
-					node.values.putIfAbsent("parkour", "false"); node.values.putIfAbsent("parkour_profile", "balanced");
+					node.values.putIfAbsent("parkour", "false"); node.values.putIfAbsent("parkour_profile", "universal");
 				}
 				if (node.type == AutomationNodeType.TIMER) node.values.putIfAbsent("seconds", "5");
 			}

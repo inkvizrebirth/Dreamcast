@@ -35,7 +35,7 @@ public final class AutomationNode {
 				values.put("path", "straight");
 				values.put("marker", "");
 				values.put("parkour", "false");
-				values.put("parkour_profile", "balanced");
+				values.put("parkour_profile", "universal");
 			}
 			case MINE -> {
 				values.put("block", "minecraft:diamond_ore");
@@ -80,7 +80,7 @@ public final class AutomationNode {
 				values.put("direction", "forward"); values.put("seconds", "1");
 				values.put("x", "${player.x}"); values.put("y", "${player.y}"); values.put("z", "${player.z}");
 				values.put("marker", ""); values.put("sprint", "sprint,jump");
-				values.put("parkour", "false"); values.put("parkour_profile", "balanced");
+				values.put("parkour", "false"); values.put("parkour_profile", "universal");
 			}
 			case SNEAK -> values.put("seconds", "1");
 			case ATTACK -> values.put("swings", "1");

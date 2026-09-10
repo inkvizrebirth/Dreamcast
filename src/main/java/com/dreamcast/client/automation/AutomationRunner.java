@@ -73,6 +73,7 @@ public final class AutomationRunner {
 	private static int previousSlot = -1;
 	private static Object scratch;
 	private static String status = "Готов";
+	private static final ParkourController PARKOUR = new ParkourController();
 
 	private AutomationRunner() { }
 
@@ -353,11 +354,28 @@ public final class AutomationRunner {
 			if (!BaritoneBridge.goal(target.getX(), target.getY(), target.getZ(), false)) {
 				BaritoneBridge.configureParkour(false);
 				fail("Baritone не начал паркур");
+				return;
 			}
+			PARKOUR.start(target, current.value("parkour_profile"));
 			return;
 		}
-		if (System.currentTimeMillis() - enteredAt > 600L && !BaritoneBridge.isPathing()) {
+		PARKOUR.tick(client, BaritoneBridge.currentMovement().orElse(null));
+		if (PARKOUR.isFailed()) {
+			PARKOUR.stop();
 			BaritoneBridge.configureParkour(false);
+			fail("Паркур остановлен: не удалось пройти сегмент");
+			return;
+		}
+		if (PARKOUR.consumeReplanRequest()) {
+			BlockPos target = (BlockPos) scratch;
+			status = "Перестраиваю паркурный сегмент";
+			BaritoneBridge.goal(target.getX(), target.getY(), target.getZ(), false);
+			enteredAt = System.currentTimeMillis();
+		}
+		if (PARKOUR.isComplete() || (System.currentTimeMillis() - enteredAt > 600L && !BaritoneBridge.isPathing()
+				&& !PARKOUR.isActive())) {
+			BaritoneBridge.configureParkour(false);
+			PARKOUR.stop();
 			next("next");
 		}
 	}
@@ -422,6 +440,7 @@ public final class AutomationRunner {
 	 */
 	private static void cleanupAction(){
 		Minecraft c=Minecraft.getInstance();
+		PARKOUR.stop();
 		BaritoneBridge.configureParkour(false);
 		for(Cursor cursor:CURSORS){
 			if(cursor.heldKey!=null){cursor.heldKey.setDown(false);cursor.heldKey=null;}

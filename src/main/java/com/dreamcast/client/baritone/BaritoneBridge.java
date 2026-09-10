@@ -13,6 +13,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Мост к Baritone.
@@ -40,6 +41,17 @@ import java.util.List;
  * </ul>
  */
 public final class BaritoneBridge {
+
+	/**
+	 * A read-only snapshot of the movement Baritone is currently executing.
+	 * The snapshot deliberately contains no Baritone types, so the automation
+	 * layer remains optional and can run when Baritone is absent or changed.
+	 *
+	 * @param source start position of the movement
+	 * @param destination destination position of the movement
+	 * @param type implementation movement name, for example MovementParkour
+	 */
+	public record MovementHint(BlockPos source, BlockPos destination, String type) { }
 
 	private static final String API_CLASS = "baritone.api.BaritoneAPI";
 	private static final String GOAL_PACKAGE = "baritone.api.pathing.goals.";
@@ -199,36 +211,66 @@ public final class BaritoneBridge {
 	}
 
 	/**
-	 * Applies a named parkour profile. The {@code neo} profile enables diagonal
-	 * transitions, overshoot descents and low jump penalties while keeping fall
-	 * height bounded so a bad route cannot turn into an uncontrolled drop.
-	 * Unknown or empty values use the conservative {@code balanced} profile.
+	 * Applies the planner settings for a named parkour profile. Timing-sensitive
+	 * execution (head-hitter windows, turn timing and landing correction) is done
+	 * by {@code ParkourController}; these settings only expand the movement graph
+	 * Baritone is allowed to plan.
 	 *
-	 * @param profile profile name: {@code balanced}, {@code aggressive} or {@code neo}
+	 * @param profile profile name: {@code balanced}, {@code universal},
+	 *                {@code h2h}; {@code neo} remains an alias for compatibility
 	 */
 	public static void configureParkourProfile(String profile) {
 		String normalized = profile == null ? "balanced" : profile.trim().toLowerCase(java.util.Locale.ROOT);
-		boolean neo = "neo".equals(normalized);
-		boolean aggressive = neo || "aggressive".equals(normalized);
+		boolean h2h = "h2h".equals(normalized) || "neo".equals(normalized)
+				|| "head_to_head".equals(normalized) || "head-to-head".equals(normalized);
+		boolean universal = h2h || "universal".equals(normalized) || "adaptive".equals(normalized)
+				|| "aggressive".equals(normalized);
 		try {
 			Class<?> api = classFor(API_CLASS);
 			Object settings = api == null ? null : invokeStatic(api, "getSettings");
 			if (settings == null) return;
 			setSetting(settings, "allowSprint", true);
 			setSetting(settings, "allowParkour", true);
-			setSetting(settings, "allowParkourPlace", aggressive);
+			setSetting(settings, "allowParkourPlace", universal);
 			setSetting(settings, "allowParkourAscend", true);
-			setSetting(settings, "allowDiagonalAscend", aggressive);
-			setSetting(settings, "allowDiagonalDescend", aggressive);
-			setSetting(settings, "allowOvershootDiagonalDescend", neo);
-			setSetting(settings, "allowDownward", aggressive);
-			setSetting(settings, "sprintAscends", aggressive);
-			setSetting(settings, "allowJumpAtBuildLimit", neo);
-			setSetting(settings, "allowJumpAt256", neo);
-			setSetting(settings, "jumpPenalty", neo ? 0.0D : aggressive ? 0.2D : 1.0D);
-			setSetting(settings, "maxFallHeightNoWater", neo ? 3 : 2);
+		setSetting(settings, "allowDiagonalAscend", universal);
+		setSetting(settings, "allowDiagonalDescend", universal);
+		setSetting(settings, "allowOvershootDiagonalDescend", h2h);
+		setSetting(settings, "allowDownward", universal);
+		setSetting(settings, "sprintAscends", universal);
+		setSetting(settings, "allowJumpAtBuildLimit", false);
+		setSetting(settings, "allowJumpAt256", false);
+		setSetting(settings, "jumpPenalty", h2h ? 0.0D : universal ? 0.35D : 1.0D);
+		setSetting(settings, "maxFallHeightNoWater", universal ? 3 : 2);
 		} catch (ReflectiveOperationException | RuntimeException error) {
 			DreamcastClient.LOGGER.warn("Не удалось применить профиль паркура {}", profile, error);
+		}
+	}
+
+	/**
+	 * Reads Baritone's current movement without exposing its classes to the rest
+	 * of Dreamcast. Reflection failures are treated as an unavailable hint.
+	 *
+	 * @return current movement snapshot, or an empty optional when no path is active
+	 */
+	public static Optional<MovementHint> currentMovement() {
+		try {
+			Object baritone = primaryBaritone();
+			Object pathing = pathingOf(baritone);
+			Object executor = invoke(pathing, "getCurrent");
+			if (executor == null) return Optional.empty();
+			Object path = invoke(executor, "getPath");
+			Object rawMovements = invoke(path, "movements");
+			if (!(rawMovements instanceof List<?> movements) || movements.isEmpty()) return Optional.empty();
+			int index = intValue(invoke(executor, "getPosition"), 0);
+			index = Math.max(0, Math.min(index, movements.size() - 1));
+			Object movement = movements.get(index);
+			BlockPos source = blockPosition(invoke(movement, "getSrc"));
+			BlockPos destination = blockPosition(invoke(movement, "getDest"));
+			if (source == null || destination == null) return Optional.empty();
+			return Optional.of(new MovementHint(source, destination, movement.getClass().getSimpleName()));
+		} catch (ReflectiveOperationException | RuntimeException ignored) {
+			return Optional.empty();
 		}
 	}
 
@@ -357,6 +399,14 @@ public final class BaritoneBridge {
 		}
 		Object provider = invokeStatic(apiClass, "getProvider");
 		return provider == null ? null : invoke(provider, "getPrimaryBaritone");
+	}
+
+	private static int intValue(Object value, int fallback) {
+		return value instanceof Number number ? number.intValue() : fallback;
+	}
+
+	private static BlockPos blockPosition(Object value) {
+		return value instanceof BlockPos position ? new BlockPos(position.getX(), position.getY(), position.getZ()) : null;
 	}
 
 	/**
